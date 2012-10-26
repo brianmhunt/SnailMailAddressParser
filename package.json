@@ -1,0 +1,11 @@
+{
+  "name": "jAddressParser",
+  "description": "A Javascript/Coffeescript library to parse address strings",
+  "version": "0.1.0",
+  "author": "Brian M Hunt <brianmhunt@gmail.com>",
+  "dependencies": {
+    "lodash": ">= 0.9.0",
+    "coffeescript": ">= 1.3.0",
+    "XRegExp": ">= 3.0.0-pre"
+  }
+}
