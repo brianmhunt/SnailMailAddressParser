@@ -40,22 +40,18 @@ class CanadaStrategy extends AddressStrategy
 
   ###
   # Parse an address into components
-  #
-  # Components are:
-  #     addressee
-  #     suite
-  #     street_number
-  #     street_name
-  #     street_name_2
-  #     municipality
-  #     prov
-  #     country
-  #     postal_code
-  #
   ###
   parse_address: (lines, address_string) ->
-    # strip trailing/leading space and split the address into lines
-    fields = {}
+    # here are the components of the Canadian address
+    fields =
+      suite: ''
+      addressee: ''
+      street_number: ''
+      street_name_2: ''
+      municipality: ''
+      province: ''
+      postal: ''
+      country: 'Canada'
 
     if lines.length < 2
       throw new Error("Addresses must be at least two lines.")
@@ -81,9 +77,9 @@ class CanadaStrategy extends AddressStrategy
     # TODO: Assert city is a. a sensible name, and/or b. an actual city name
 
     if m = XRegExp.exec(last_line, CANADA_STREET_REX)
-      fields['suite'] = m.suite
-      fields['street_number'] = m.number
-      fields['street_name'] = m.name
+      fields['suite'] = m.suite or ''
+      fields['street_number'] = m.number or ''
+      fields['street_name'] = m.name or ''
 
     else
       fields['street_number_2'] = last_line
@@ -92,9 +88,9 @@ class CanadaStrategy extends AddressStrategy
         last_line = lines.pop()
 
         if m = XRegExp.exec(last_line, CANADA_STREET_REX)
-          fields['suite'] = m.suite
-          fields['street_number'] = m.number
-          fields['street_name'] = m.name
+          fields['suite'] = m.suite or ''
+          fields['street_number'] = m.number or ''
+          fields['street_name'] = m.name or ''
         else
           throw new Error("Line #{lines.length+1} was expected to be street
  'Suite - Street # Street name', but it is \"#{last_line}\"")
@@ -105,7 +101,7 @@ class CanadaStrategy extends AddressStrategy
     fields['addressee'] = lines.pop() or "" # may be undefined.
 
     if lines.length > 0
-      throw new Error("This address has too many opening lines.")
+      throw new Error("This address has too many lines.")
       
     return fields
 

@@ -96,24 +96,21 @@ CanadaStrategy = (function(_super) {
 
   /*
     # Parse an address into components
-    #
-    # Components are:
-    #     addressee
-    #     suite
-    #     street_number
-    #     street_name
-    #     street_name_2
-    #     municipality
-    #     prov
-    #     country
-    #     postal_code
-    #
   */
 
 
   CanadaStrategy.prototype.parse_address = function(lines, address_string) {
     var fields, last_line, m;
-    fields = {};
+    fields = {
+      suite: '',
+      addressee: '',
+      street_number: '',
+      street_name_2: '',
+      municipality: '',
+      province: '',
+      postal: '',
+      country: 'Canada'
+    };
     if (lines.length < 2) {
       throw new Error("Addresses must be at least two lines.");
     }
@@ -130,17 +127,17 @@ CanadaStrategy = (function(_super) {
     }
     last_line = lines.pop();
     if (m = XRegExp.exec(last_line, CANADA_STREET_REX)) {
-      fields['suite'] = m.suite;
-      fields['street_number'] = m.number;
-      fields['street_name'] = m.name;
+      fields['suite'] = m.suite || '';
+      fields['street_number'] = m.number || '';
+      fields['street_name'] = m.name || '';
     } else {
       fields['street_number_2'] = last_line;
       if (lines.length > 0) {
         last_line = lines.pop();
         if (m = XRegExp.exec(last_line, CANADA_STREET_REX)) {
-          fields['suite'] = m.suite;
-          fields['street_number'] = m.number;
-          fields['street_name'] = m.name;
+          fields['suite'] = m.suite || '';
+          fields['street_number'] = m.number || '';
+          fields['street_name'] = m.name || '';
         } else {
           throw new Error("Line " + (lines.length + 1) + " was expected to be street 'Suite - Street # Street name', but it is \"" + last_line + "\"");
         }
@@ -150,7 +147,7 @@ CanadaStrategy = (function(_super) {
     }
     fields['addressee'] = lines.pop() || "";
     if (lines.length > 0) {
-      throw new Error("This address has too many opening lines.");
+      throw new Error("This address has too many lines.");
     }
     return fields;
   };

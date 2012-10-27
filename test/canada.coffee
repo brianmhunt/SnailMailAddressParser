@@ -17,7 +17,9 @@ expectations = {
     "country": "Canada",
     "street_number": "100",
     "street_name": "Bay Street",
-    "addressee": ""
+    'street_name_2': '',
+    "addressee": "",
+    'suite': ''
   },
 
   "Mr. Incognito\n100 Bay Street\nToronto, ON M5H 1T1" : {
@@ -27,7 +29,9 @@ expectations = {
     "country": "Canada",
     "street_number": "100",
     "street_name": "Bay Street",
+    "street_name_2": "",
     "addressee": "Mr. Incognito"
+    'suite': ''
   },
 }
 
@@ -55,10 +59,10 @@ describe "good address", ->
 
           assert(_.isEmpty(parsed_only_keys),
             "Expected \"#{parsed_only_keys}\" attribute(s), "+
-            "but it was not found in the parsed result")
+            "but 'twas not in the parsed result")
           assert(_.isEmpty(expect_only_keys),
             "Parsed result had \"#{parsed_only_keys}\" attribute(s), "+
-            "but it was not expected")
+            "but 'twas not expected")
 
         it "has identical values", ->
           # all the keys are identical
