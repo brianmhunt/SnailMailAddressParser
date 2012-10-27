@@ -1,31 +1,20 @@
 #
-# Requires
-# --------
-#<<src/iso3166
-#<<src/strategy
+# AddressParser
+# -------------
 #
-
-# the following is a list of all possible names of all countries
-ALL_COUNTRY_IDS = _.flatten(_.map(iso3166, (c) -> [c.name, c.aliases]))
-
-# the following maps aliases and names onto the canonical country name
-# eg. USA: United States; United States: United States, etc.
-COUNTRY_NAMES_MAP = {}
-
-_.each(iso3166, (country) ->
-  name = country.name.toLowerCase()
-
-  COUNTRY_NAMES_MAP[name] = name
-
-  _.each(country.aliases, (alias) ->
-    COUNTRY_NAMES_MAP[alias.toLowerCase()] = name
-  )
-)
-
-jAddressParser = class
+# This is the main class, exported as jAddressParser.
+#
+#
+# Requires
+# ~~~~~~~~
+#<<src/AddressStrategy
+#
+class AddressParser
   constructor: (defaultCountry) ->
-    @_string = s
     @_defaultCountry = defaultCountry
+
+  # expose for testing
+  AddressStrategy: AddressStrategy
 
   parse: (str, defaultCountry) ->
     if not _.isString(str)
@@ -34,7 +23,7 @@ jAddressParser = class
     # split the address into usable lines
     # - skip any empty space
     # - trim whitespace from lines
-    lines = _.filter(_.map(str.split('\n'), (s) -> e.trim()))
+    lines = _.filter(_.map(str.split('\n'), (aline) -> aline.trim()))
 
     if lines.length < 2
       throw new Error("Addresses must be at least two lines long")

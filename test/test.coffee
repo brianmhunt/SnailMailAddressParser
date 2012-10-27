@@ -1,27 +1,20 @@
 #
 # Test the basic functionality
 #
-requirejs = require('requirejs')
+_ = require('lodash')
 chai = require('chai')
 
 assert = chai.assert
 expect = chai.expect
 should = chai.should()
 
-requirejs.config
-  nodeRequire: require
-  baseUrl: __dirname
-
-jAddressParser = requirejs("../build/jAddressParser")
-
-log "jAP #{jAddressParser}"
-log jAddressParser
+ap = require("../build/jAddressParser")
 
 describe "jAddressParser", ->
   it("should be an object with a parse function", ->
-    expect(jAddressParser).to.be.a('object')
-    expect(jAddressParser).to.have.property('parse')
-    expect(jAddressParser.parse).to.be.a('function')
+    expect(ap).to.be.a('object')
+    expect(ap).to.have.property('parse')
+    expect(ap.parse).to.be.a('function')
   )
 
 

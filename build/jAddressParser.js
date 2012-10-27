@@ -1,5 +1,56 @@
-(function(def) {
-  def(['lodash', 'XRegExp'], function (_, XRegExp) { // begin AMD definition
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
+
+define(['lodash', 'XRegExp'], function (_, xregexp) { // begin AMD definition
+  var XRegExp = xregexp.XRegExp;
+var ALL_COUNTRY_IDS, AddressParser, AddressStrategy, COUNTRY_NAMES_MAP, CanadaStrategy, iso3166,
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+AddressParser = (function() {
+
+  function AddressParser(defaultCountry) {
+    this._defaultCountry = defaultCountry;
+  }
+
+  AddressParser.prototype.AddressStrategy = AddressStrategy;
+
+  AddressParser.prototype.parse = function(str, defaultCountry) {
+    var canonical_name, country, last_line, lines;
+    if (!_.isString(str)) {
+      throw new Error("Address must be a string");
+    }
+    lines = _.filter(_.map(str.split('\n'), function(aline) {
+      return aline.trim();
+    }));
+    if (lines.length < 2) {
+      throw new Error("Addresses must be at least two lines long");
+    }
+    last_line = lines[lines.length - 1];
+    if (__indexOf.call(ALL_COUNTRY_IDS, last_line) >= 0) {
+      country = lines.pop();
+    } else if (defaultCountry) {
+      country = defaultCountry;
+    } else {
+      country = this.defaultCountry;
+    }
+    if (!country) {
+      throw new Error("Address parsing cannot determine what country to use");
+    }
+    canonical_name = COUNTRY_NAMES_MAP[country.toLowerCase()];
+    try {
+      AddressStrategy.do_parse_address(canonical_name, lines, str);
+    } catch (err) {
+      console.log("Invalid address: " + err);
+      throw new Error("Invalid address: " + err);
+    }
+    return parsed;
+  };
+
+  return AddressParser;
+
+})();
+
 /*
 # This is the base class for all strategies
 #
@@ -9,9 +60,11 @@
 # TODO: Address verification with eg Geocoder integration
 */
 
+
 /*
 #   AddressStrategy
 #   ---------------
+# << iso3166
 #
 # This class is intended to be subclassed, and expects parse_address to be
 # overloaded. function should take a series of lines and return a simple
@@ -20,16 +73,14 @@
 # A given `subclass` should, after its definition, call subclass.register()
 */
 
-var ALL_COUNTRY_IDS, AddressStrategy, COUNTRY_NAMES_MAP, CanadaStrategy, iso3166, jAddressParser,
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 AddressStrategy = (function() {
 
   function AddressStrategy() {}
 
   AddressStrategy._registered_strategies = {};
+
+  AddressStrategy.COUNTRIES_REX = XRegExp("(" + (_.keys(iso3166).join("|")) + ")");
 
   /*
      * Register this subclass as a strategy
@@ -44,10 +95,10 @@ AddressStrategy = (function() {
     if (!name) {
       throw new Error("Strategies require a `name`");
     }
-    if (__indexOf.call(jAddressParser._registered_strategies, name) >= 0) {
+    if (__indexOf.call(AddressStrategy._registered_strategies, name) >= 0) {
       throw new Error("Strategy " + name + " registered twice");
     }
-    return jAddressParser._registered_strategies[name] = this;
+    return AddressStrategy._registered_strategies[name] = this;
   };
 
   return AddressStrategy;
@@ -56,10 +107,10 @@ AddressStrategy = (function() {
 
 AddressStrategy.do_parse_address = function(country, lines, address_string) {
   var strategy, _ref;
-  if (_ref = !country, __indexOf.call(jAddressParser._registered_strategies, _ref) >= 0) {
+  if (_ref = !country, __indexOf.call(AddressStrategy._registered_strategies, _ref) >= 0) {
     throw new Error("No strategy to parse an address for " + country);
   }
-  strategy = new jAddressParser._registered_strategies();
+  strategy = new AddressStrategy._registered_strategies();
   log("Parsing address in " + country + ".");
   return strategy.parse_address(lines, address_string);
 };
@@ -86,13 +137,11 @@ CanadaStrategy = (function(_super) {
 
   CanadaStrategy.prototype.name = 'canada';
 
-  CanadaStrategy.prototype.provinces_list = ["AB", "Alberta", "BC", "British Columbia", "Manitoba", "MB", "New Brunswick", "NB", "Newfoundland and Labrador", "Newfoundland", "NF", "NL", "Northwest Territories", "NT", "Nova Scotia", "NS", "Nunavut", "NU", "ON", "Ontario", "Prince Edward Island", "PE", "Quebec", "QC", "Saskatchewan", "SK", "Yukon", "YT"];
+  CanadaStrategy.provinces_list = ["AB", "Alberta", "BC", "British Columbia", "Manitoba", "MB", "New Brunswick", "NB", "Newfoundland and Labrador", "Newfoundland", "NF", "NL", "Northwest Territories", "NT", "Nova Scotia", "NS", "Nunavut", "NU", "ON", "Ontario", "Prince Edward Island", "PE", "Quebec", "QC", "Saskatchewan", "SK", "Yukon", "YT"];
 
-  CanadaStrategy.prototype.COUNTRIES_REX = XRegExp("(" + (_.keys(iso3166).join("|")) + ")");
+  CanadaStrategy.CANADA_MUNI_REX = XRegExp("^\s*    (?<muni> \\w[\\w\\s\.]+?) \\s* ,? \\s*    (?<prov> " + (CanadaStrategy.provinces_list.join("|")) + ") \\s* ,? \\s*    (?<postal> \\w\\d\\w\\s*\\d\\w\\d) \s*    $", 'x');
 
-  CanadaStrategy.prototype.CANADA_MUNI_REX = XRegExp("^\s*    (?<muni> \\w[\\w\\s\.]+?) \\s* ,? \\s*    (?<prov> " + (provinces_list.join("|")) + ") \\s* ,? \\s*    (?<postal> \\w\\d\\w\\s*\\d\\w\\d) \s*    $", 'x');
-
-  CanadaStrategy.prototype.CANADA_STREET_REX = XRegExp("^\\s*    (?:(?<suite> [^-]+) \\s* - \\s*)?    (?<number> \\d+)? \\s+    (?<name> .*?) \\s*    $", 'x');
+  CanadaStrategy.CANADA_STREET_REX = XRegExp("^\\s*    (?:(?<suite> [^-]+) \\s* - \\s*)?    (?<number> \\d+)? \\s+    (?<name> .*?) \\s*    $", 'x');
 
   /*
     # Parse an address into components
@@ -165,7 +214,7 @@ CanadaStrategy = (function(_super) {
 
 })(AddressStrategy);
 
-CanadaStrategy.register();
+new CanadaStrategy().register();
 
 /*
  * ISO 3166 country codes
@@ -940,58 +989,5 @@ _.each(iso3166, function(country) {
   });
 });
 
-jAddressParser = (function() {
-
-  function _Class(defaultCountry) {
-    this._string = s;
-    this._defaultCountry = defaultCountry;
-  }
-
-  _Class.prototype.parse = function(str, defaultCountry) {
-    var canonical_name, country, last_line, lines;
-    if (!_.isString(str)) {
-      throw new Error("Address must be a string");
-    }
-    lines = _.filter(_.map(str.split('\n'), function(s) {
-      return e.trim();
-    }));
-    if (lines.length < 2) {
-      throw new Error("Addresses must be at least two lines long");
-    }
-    last_line = lines[lines.length - 1];
-    if (__indexOf.call(ALL_COUNTRY_IDS, last_line) >= 0) {
-      country = lines.pop();
-    } else if (defaultCountry) {
-      country = defaultCountry;
-    } else {
-      country = this.defaultCountry;
-    }
-    if (!country) {
-      throw new Error("Address parsing cannot determine what country to use");
-    }
-    canonical_name = COUNTRY_NAMES_MAP[country.toLowerCase()];
-    try {
-      AddressStrategy.do_parse_address(canonical_name, lines, str);
-    } catch (err) {
-      console.log("Invalid address: " + err);
-      throw new Error("Invalid address: " + err);
-    }
-    return parsed;
-  };
-
-  return _Class;
-
-})();
-
+return new AddressParser();
 }); // end AMD definition
-}(
- typeof define === 'function' && define.amd?
-  //AMD
-  function(name, deps, factory){
-      define(deps, factory);
-  } :
-  //CommonJS
-  function(deps, factory){
-      module.exports = factory.apply(this, deps.map(require));
-  }
-));

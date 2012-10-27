@@ -4,11 +4,14 @@
   "version": "0.1.0",
   "author": "Brian M Hunt <brianmhunt@gmail.com>",
   "dependencies": {
-    "lodash": ">= 0.9.0",
+    // used by Node.js for building & testing
     "coffeescript": ">= 1.3.0",
-    "XRegExp": ">= 2.0.0",
     "coffee-toaster"  : "0.6.1"
+    "amdefine": ">=0.0.2",
     "mocha": "*",
     "chai": "*",
+    // used by the strategies
+    "lodash": ">= 0.9.0",
+    "XRegExp": ">= 2.0.0",
   },
 }

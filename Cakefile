@@ -33,23 +33,15 @@ DEPS = ['lodash', 'requirejs', 'coffee-script', 'xregexp', 'chai', 'mocha',
 # The following is an AMD wrapper
 # from: https://gist.github.com/1251668
 LEADER = """
-(function(def) {
-  def(['lodash', 'XRegExp'], function (_, XRegExp) { // begin AMD definition
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
+
+define(['lodash', 'XRegExp'], function (_, xregexp) { // begin AMD definition
+  var XRegExp = xregexp.XRegExp;
 """
 
 FOOTER = """
-  }); // end AMD definition
-}(
-   typeof define === 'function' && define.amd?
-    //AMD
-    function(name, deps, factory){
-        define(deps, factory);
-    } :
-    //CommonJS
-    function(deps, factory){
-        module.exports = factory.apply(this, deps.map(require));
-    }
-));
+  return new AddressParser();
+}); // end AMD definition
 """
 
 task 'test', 'Run tests in Mocha', (options) ->

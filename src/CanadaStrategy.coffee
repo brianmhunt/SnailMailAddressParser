@@ -10,7 +10,7 @@
 class CanadaStrategy extends AddressStrategy
   name: 'canada'
 
-  provinces_list: [
+  @provinces_list: [
     "AB", "Alberta",
     "BC", "British Columbia",
     "Manitoba", "MB",
@@ -26,15 +26,13 @@ class CanadaStrategy extends AddressStrategy
     "Yukon", "YT",
   ]
 
-  COUNTRIES_REX: XRegExp("(#{_.keys(iso3166).join("|")})")
-
-  CANADA_MUNI_REX: XRegExp("^\s*
+  @CANADA_MUNI_REX: XRegExp("^\s*
     (?<muni> \\w[\\w\\s\.]+?) \\s* ,? \\s*
-    (?<prov> #{provinces_list.join("|")}) \\s* ,? \\s*
+    (?<prov> #{@provinces_list.join("|")}) \\s* ,? \\s*
     (?<postal> \\w\\d\\w\\s*\\d\\w\\d) \s*
     $", 'x')
 
-  CANADA_STREET_REX: XRegExp("^\\s*
+  @CANADA_STREET_REX: XRegExp("^\\s*
     (?:(?<suite> [^-]+) \\s* - \\s*)?
     (?<number> \\d+)? \\s+
     (?<name> .*?) \\s*
@@ -122,4 +120,4 @@ class CanadaStrategy extends AddressStrategy
       
     return fields
 
-CanadaStrategy.register()
+new CanadaStrategy().register()
