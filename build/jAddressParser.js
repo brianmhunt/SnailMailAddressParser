@@ -1,4 +1,4 @@
-
+(function() { if ('function' !== typeof define) { var define = require('amdefine')(module); }
 define('coffee-script',{});
 define('cs',{load: function(id){throw new Error("Dynamic load not allowed: " + id);}});
 /*
@@ -362,7 +362,7 @@ define('src/iso3166',[], [
 (function() {
   var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-  define('cs!src/main',['./iso3166', 'underscore', 'cs!./canada'], function() {
+  define('cs!src/main',['underscore', './iso3166', 'cs!./canada'], function() {
     var ALL_COUNTRY_IDS, COUNTRY_NAMES_MAP, country_parser_map, iso3166, jAddressParser;
     iso3166 = require('iso3166');
     ALL_COUNTRY_IDS = _.flatten(_.map(iso3166, function(c) {
@@ -427,3 +427,4 @@ define('src/iso3166',[], [
   });
 
 }).call(this);
+}());

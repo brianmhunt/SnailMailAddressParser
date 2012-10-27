@@ -26,7 +26,7 @@ DEPS = ['lodash', 'requirejs', 'coffee-script', 'xregexp', 'chai', 'mocha',
   'amdefine']
 
 task 'test', 'Run tests in Mocha', (options) ->
-  log "start test"
+  log "test with #{TEST_COMMAND}"
   args = "#{TEST_OPTIONS}".trimRight().split(' ')
   spawn "#{TEST_COMMAND}",args,customFds : [0, 1, 2]
 
@@ -36,7 +36,7 @@ task 'deps', 'Install dependant npm modules', (options) ->
   spawn "npm",args,customFds : [0, 1, 2]
 
 task 'build', "Build #{PROGNAM} to the build/ directory", (options) ->
-  log "Building with r.js"
+  log "build with r.js"
   args = ["-o", "build.js"]
   spawn "r.js",args,customFds : [0, 1, 2]
 

@@ -3,12 +3,13 @@
 #
 # Returns the jAddressParser object
 ###
-if typeof define != 'function'
-  define = require('amdefine')(module)
+#if typeof define != 'function'
+  #define = require('amdefine')(module)
+  #  define = require('amdefine')(module)
 
 define [
-  './iso3166',
   'underscore', # or lodash - drop-in replacement
+  './iso3166',
   'cs!./canada',
 ], ->
   iso3166 = require('iso3166')

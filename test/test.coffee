@@ -12,8 +12,6 @@ requirejs.config
   nodeRequire: require
   baseUrl: __dirname
 
-console.log("MODULE", module)
-
 jAddressParser = requirejs("../build/jAddressParser")
 
 describe "jAddressParser", ->
