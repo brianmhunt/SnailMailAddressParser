@@ -14,6 +14,9 @@ requirejs.config
 
 jAddressParser = requirejs("../build/jAddressParser")
 
+log "jAP #{jAddressParser}"
+log jAddressParser
+
 describe "jAddressParser", ->
   it("should be an object with a parse function", ->
     expect(jAddressParser).to.be.a('object')

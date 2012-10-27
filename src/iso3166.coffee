@@ -1,9 +1,10 @@
-/*
+###
  * ISO 3166 country codes
+ *
  * See eg https://github.com/lukes/ISO-3166-Countries-with-Regional-Codes
- */
+###
 
-define([], [
+iso3166 = [
    {name: "Afghanistan", aliases: ["AF"]},
    {name: "Åland Islands", aliases: ["AX", "Aland Islands"]},
    {name: "Albania", aliases: ["AL"]},
@@ -253,5 +254,5 @@ define([], [
    {name: "Yemen", aliases: ["YE"]},
    {name: "Zambia", aliases: ["ZM"]},
    {name: "Zimbabwe", aliases: ["ZW"]}
-]);
+  ]
 

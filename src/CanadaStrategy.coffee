@@ -1,17 +1,16 @@
 ###
-# Canadian post addresses
+#   CanadaStrategy
+#   --------------
+# A way to parse Canadian addresses
 #
-# See eg Addressing Guidelines
+# Reference: 'Addressing Guidelines'
 # <http://www.canadapost.ca/tools/pg/manual/PGaddress-e.asp>
+#
 ###
+class CanadaStrategy extends AddressStrategy
+  name: 'canada'
 
-define [
-  'underscore',
-  'xregexp'
-], ->
-  XRe = require('xregexp')
-
-  provinces_list = [
+  provinces_list: [
     "AB", "Alberta",
     "BC", "British Columbia",
     "Manitoba", "MB",
@@ -27,19 +26,15 @@ define [
     "Yukon", "YT",
   ]
 
-  # TODO: Someday, get postal verification from the Universal Postal Union?
-  #
-  # TODO: Many, many unit tests that expands with user feedback
-  
-  COUNTRIES_REX = XRe("(#{_.keys(require('content/iso3166')).join("|")})")
+  COUNTRIES_REX: XRegExp("(#{_.keys(iso3166).join("|")})")
 
-  CANADA_MUNI_REX = XRe("^\s*
+  CANADA_MUNI_REX: XRegExp("^\s*
     (?<muni> \\w[\\w\\s\.]+?) \\s* ,? \\s*
     (?<prov> #{provinces_list.join("|")}) \\s* ,? \\s*
     (?<postal> \\w\\d\\w\\s*\\d\\w\\d) \s*
     $", 'x')
 
-  CANADA_STREET_REX = XRe("^\\s*
+  CANADA_STREET_REX: XRegExp("^\\s*
     (?:(?<suite> [^-]+) \\s* - \\s*)?
     (?<number> \\d+)? \\s+
     (?<name> .*?) \\s*
@@ -60,9 +55,8 @@ define [
   #     postal_code
   #
   ###
-  parse_address = (addr) ->
+  parse_address = (lines, address_string) ->
     # strip trailing/leading space and split the address into lines
-    lines = _.filter(_.map(addr.splitlines(), $.trim))
     fields = {}
 
     if lines.length < 2
@@ -128,6 +122,4 @@ define [
       
     return fields
 
-  return {
-    parse: parse_address
-  }
+CanadaStrategy.register()
