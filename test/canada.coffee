@@ -35,7 +35,7 @@ expectations = {
   },
 }
 
-describe "good address", ->
+describe "Unambiguous Canadian addresses", ->
   _.each expectations, (expect, from_string) ->
     from_addr = color("pending", JSON.stringify(from_string)) # escape newlines
 
@@ -53,7 +53,6 @@ describe "good address", ->
           assert.isObject(parsed)
 
         it "has the expected keys", ->
-
           parsed_only_keys = _.difference(_.keys(parsed), _.keys(expect))
           expect_only_keys = _.difference(_.keys(expect), _.keys(parsed))
 
