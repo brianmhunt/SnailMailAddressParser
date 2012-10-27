@@ -29,15 +29,15 @@ TARGET='build/jAddressParser'
 DEPS = ['lodash', 'requirejs', 'coffee-script', 'xregexp', 'chai', 'mocha',
   'amdefine', 'flour']
 
-# The following is an AMD wrapper
-# from: https://gist.github.com/1251668
+# The following uses `amdefine` for AMD support on Node.js
+# It should also work with RequireJS.
+# In future it should "just work" in other sensible cases.
 LEADER = """
 if (typeof define !== 'function') { var define = require('amdefine')(module) }
 
 define(['lodash', 'XRegExp'], function (_, xregexp) { // begin AMD definition
   var XRegExp = xregexp.XRegExp;
 """
-
 FOOTER = """
   return new AddressParser();
 }); // end AMD definition
