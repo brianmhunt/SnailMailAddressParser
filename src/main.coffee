@@ -3,7 +3,6 @@
 #
 # Returns the jAddressParser object
 ###
-
 if typeof define != 'function'
   define = require('amdefine')(module)
 
