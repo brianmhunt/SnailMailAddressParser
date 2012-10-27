@@ -30,8 +30,11 @@ Requirements for testing
 With [Homebrew](http://mxcl.github.com/homebrew/)
 
 - Node.js (brew install node)
+
+Once npm is installed, you can run `make deps` or alternatively
+
 - Mocha (npm install -g mocha)
 - Coffee-script (npm install -g coffee-script)
-
+- Requirejs (npm install -g requirejs)
 
 
