@@ -29,8 +29,11 @@ Requirements for testing
 With [Homebrew](http://mxcl.github.com/homebrew/)
 
 - Node.js 
+
       brew install node
+
 - Coffee-script 
+
       npm install -g coffee-script
 
 Once 'npm' and coffee-script installed, you can run `cake deps` to install the
