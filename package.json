@@ -9,6 +9,7 @@
     "XRegExp": ">= 2.0.0",
     "mocha": "*",
     "chai": "*",
-    "amdefine": ">=0.0.2"
+    "amdefine": ">=0.0.2",
+    "flour": "*"
   },
 }
