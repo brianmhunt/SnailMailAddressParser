@@ -7,7 +7,7 @@
 #
 # Requires
 # ~~~~~~~~
-#<<src/AddressStrategy
+#<< jAddressParser/*
 #
 class AddressParser
   constructor: (defaultCountry) ->
@@ -18,7 +18,7 @@ class AddressParser
 
   parse: (str, defaultCountry) ->
     if not _.isString(str)
-      throw new Error("Address must be a string")
+      throw new Error("Address must be a string, got #{typeof str}.")
 
     # split the address into usable lines
     # - skip any empty space
@@ -49,14 +49,10 @@ class AddressParser
     # convert from eg 'Canada' to 'canada' or "CA" to 'ca'
     canonical_name = COUNTRY_NAMES_MAP[country.toLowerCase()]
 
-    try
-      # pass both lines and the address string in - no need to duplicate the
-      # common strategy of splitting lines repeatedly; and similarly, it may be
-      # useful for some strategies to have the original string.
-      AddressStrategy.do_parse_address(canonical_name, lines, str)
-    catch err
-      console.log("Invalid address: #{err}")
-      throw new Error("Invalid address: #{err}")
+    # pass both lines and the address string in - no need to duplicate the
+    # common strategy of splitting lines repeatedly; and similarly, it may be
+    # useful for some strategies to have the original string.
+    parsed = AddressStrategy.do_parse_address(canonical_name, lines, str)
 
     return parsed
 

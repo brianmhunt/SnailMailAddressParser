@@ -10,7 +10,7 @@
 class CanadaStrategy extends AddressStrategy
   name: 'canada'
 
-  @provinces_list: [
+  provinces_list = [
     "AB", "Alberta",
     "BC", "British Columbia",
     "Manitoba", "MB",
@@ -26,13 +26,13 @@ class CanadaStrategy extends AddressStrategy
     "Yukon", "YT",
   ]
 
-  @CANADA_MUNI_REX: XRegExp("^\s*
+  CANADA_MUNI_REX = XRegExp("^\s*
     (?<muni> \\w[\\w\\s\.]+?) \\s* ,? \\s*
-    (?<prov> #{@provinces_list.join("|")}) \\s* ,? \\s*
+    (?<prov> #{provinces_list.join("|")}) \\s* ,? \\s*
     (?<postal> \\w\\d\\w\\s*\\d\\w\\d) \s*
     $", 'x')
 
-  @CANADA_STREET_REX: XRegExp("^\\s*
+  CANADA_STREET_REX = XRegExp("^\\s*
     (?:(?<suite> [^-]+) \\s* - \\s*)?
     (?<number> \\d+)? \\s+
     (?<name> .*?) \\s*
@@ -53,7 +53,7 @@ class CanadaStrategy extends AddressStrategy
   #     postal_code
   #
   ###
-  parse_address = (lines, address_string) ->
+  parse_address: (lines, address_string) ->
     # strip trailing/leading space and split the address into lines
     fields = {}
 
@@ -64,19 +64,8 @@ class CanadaStrategy extends AddressStrategy
     #
     # the last line can be a country or a "Municipality Prov  Postal Code"
     last_line = lines.pop()
-
-    if m = XRe.exec($.trim(last_line), COUNTRIES_REX)
-      fields['country'] = m[1]
-      # We are in a Non-canadian country now. XXX WHO KNOWS WHAT'LL HAPPEN
-      # BELOW. It's a mystery!
-      
-      if lines.length < 2
-        throw new Error("Using country #{m[1]}; country-specific address
-                         must be 2 lines")
-
-      last_line = lines.pop()
     
-    else if m = XRe.exec(last_line, CANADA_MUNI_REX)
+    if m = XRegExp.exec(last_line, CANADA_MUNI_REX)
       fields['municipality'] = m.muni
       fields['province'] = m.prov
       fields['postal'] = m.postal
@@ -91,7 +80,7 @@ class CanadaStrategy extends AddressStrategy
     last_line = lines.pop()
     # TODO: Assert city is a. a sensible name, and/or b. an actual city name
 
-    if m = XRe.exec(last_line, CANADA_STREET_REX)
+    if m = XRegExp.exec(last_line, CANADA_STREET_REX)
       fields['suite'] = m.suite
       fields['street_number'] = m.number
       fields['street_name'] = m.name
@@ -102,7 +91,7 @@ class CanadaStrategy extends AddressStrategy
       if lines.length > 0
         last_line = lines.pop()
 
-        if m = XRe.exec(last_line, CANADA_STREET_REX)
+        if m = XRegExp.exec(last_line, CANADA_STREET_REX)
           fields['suite'] = m.suite
           fields['street_number'] = m.number
           fields['street_name'] = m.name
@@ -113,7 +102,7 @@ class CanadaStrategy extends AddressStrategy
         throw new Error("An address requires a street e.g. 'Suite - Street #
  Street name'")
 
-    fields['addressee'] = lines.pop() # may be undefined.
+    fields['addressee'] = lines.pop() or "" # may be undefined.
 
     if lines.length > 0
       throw new Error("This address has too many opening lines.")

@@ -24,7 +24,6 @@ path = require 'path'
 
 TEST_COMMAND="#{__dirname}/node_modules/.bin/mocha"
 TEST_OPTIONS='--growl --compilers coffee:coffee-script -R spec'
-
 TARGET='build/jAddressParser'
 
 DEPS = ['lodash', 'requirejs', 'coffee-script', 'xregexp', 'chai', 'mocha',
@@ -44,15 +43,15 @@ FOOTER = """
 }); // end AMD definition
 """
 
-task 'test', 'Run tests in Mocha', (options) ->
-  log "test with #{TEST_COMMAND}"
-  args = "#{TEST_OPTIONS}".trimRight().split(' ')
-  spawn "#{TEST_COMMAND}",args,customFds : [0, 1, 2]
-
 task 'deps', 'Install dependant npm modules', (options) ->
   args = "install #{DEPS.join(" ")}".trimRight().split(" ")
   log "npm #{args.join(" ")}"
   spawn "npm",args,customFds : [0, 1, 2]
+
+task 'test', 'Run tests in Mocha', (options) ->
+  log "test with #{TEST_COMMAND}"
+  args = "#{TEST_OPTIONS}".trimRight().split(' ')
+  spawn "#{TEST_COMMAND}",args,customFds : [0, 1, 2]
 
 task 'toast', "Build the project into the build/ dir", (options) ->
   Toaster = require("coffee-toaster").Toaster

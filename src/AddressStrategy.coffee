@@ -21,7 +21,6 @@
 ###
 class AddressStrategy
   @_registered_strategies = {}
-  @COUNTRIES_REX: XRegExp("(#{_.keys(iso3166).join("|")})")
 
   ###
    * Register this subclass as a strategy
@@ -43,8 +42,8 @@ AddressStrategy.do_parse_address = (country, lines, address_string) ->
   if not country in AddressStrategy._registered_strategies
     throw new Error("No strategy to parse an address for #{country}")
 
-  strategy = new AddressStrategy._registered_strategies()
+  #console.log "Parsing address in #{country}."
+  strategy = AddressStrategy._registered_strategies[country]
 
-  log "Parsing address in #{country}."
   return strategy.parse_address(lines, address_string)
   

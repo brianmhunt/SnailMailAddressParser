@@ -1,14 +1,11 @@
 #
 # Test the basic functionality
 #
-_ = require('lodash')
-chai = require('chai')
-
-assert = chai.assert
-expect = chai.expect
-should = chai.should()
-
+# --- Included at the top of each test file
+_ = require('lodash'); chai = require('chai')
+assert = chai.assert; expect = chai.expect; should = chai.should()
 ap = require("../build/jAddressParser")
+# ---
 
 describe "jAddressParser", ->
   it("should be an object with a parse function", ->
