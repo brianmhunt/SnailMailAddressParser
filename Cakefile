@@ -28,14 +28,30 @@ TARGET='build/snailmailaddressparser'
 #
 # TODO: check for global "_" (underscore)
 LEADER = """
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof require !== 'function') {
+    // browser w/o dependency checking
+    if (typeof XRegExp !== 'function') {
+        console.log("No XRegExp object found - is it installed?.")
+    }
+    if (typeof _ !== 'function') {
+        console.log("Underscore or lodash were not found. Is one installed?")
+    }
+
+    var define = function (deps, foo) {
+        window.snailmailaddressparser = foo(_, {XRegExp: XRegExp});
+    }
+} else {
+    if (typeof define !== 'function') {
+        var define = require('amdefine')(module);
+    }
+}
 
 define(['lodash', 'xregexp'], function (_, xregexp) { // begin AMD definition
   var XRegExp = xregexp.XRegExp;
-/*  ---- Begin AMD definition ---- */
+/*  ---- Begin AMD content ---- */
 """
 FOOTER = """
-/*  ---- End AMD definition ---- */
+/*  ---- End AMD content ---- */
   return new SnailMailAddressParser();
 });
 """
