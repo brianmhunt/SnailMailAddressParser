@@ -1,10 +1,10 @@
 {
-  "name": "SnailMailAddressParser",
-  "description": "A Javascript library to parse snail mail addresses into components",
-  "version": "0.1.1-alpha",
-  "author": "Brian M Hunt <brianmhunt@gmail.com>",
-  "dependencies": {
-    "lodash": ">= 0.9.0",
+  "name": "SnailMailAddressParser",
+  "description": "A Javascript library to parse snail mail addresses into components",
+  "version": "0.1.1-alpha",
+  "author": "Brian M Hunt <brianmhunt@gmail.com>",
+  "dependencies": {
+    "lodash": ">= 0.9.0",
     "XRegExp": ">= 2.0.0",
     "amdefine": ">=0.0.2"
   },
@@ -13,18 +13,18 @@
     "coffee-toaster"  : "0.6.1",
     "mocha": "*",
     "chai": "*"
-  },
-  'scripts': {
+  },
+  "scripts": {
     "test": "mocha --compilers coffee:coffee-script -R spec"
   },
   "main": "./build/SnailMailAddressParser.js",
-  "keywords": {
+  "keywords": [
     "parse",
     "address",
     "validate",
     "snail",
     "mail"
-  },
+  ],
   "license": "MIT",
   "engines": {
     "node": ">=0.8"

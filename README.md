@@ -1,6 +1,9 @@
 SnailMailAddressParser
 ======================
 
+[![Build Status](https://travis-ci.org/brianmhunt/SnailMailAddressParser.png)](https://travis-ci.org/brianmhunt/SnailMailAddressParser)
+
+
 A Javascript library for parsing valid address strings into their constituent elements.
 
 It is hosted on GitHub at
