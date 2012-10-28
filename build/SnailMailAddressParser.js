@@ -1,6 +1,6 @@
 if (typeof define !== 'function') { var define = require('amdefine')(module) }
 
-define(['lodash', 'XRegExp'], function (_, xregexp) { // begin AMD definition
+define(['lodash', 'xregexp'], function (_, xregexp) { // begin AMD definition
   var XRegExp = xregexp.XRegExp;
 /*  ---- Begin AMD definition ---- */
 /*

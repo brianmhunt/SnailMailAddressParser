@@ -1,0 +1,53 @@
+#
+# Here are valid Canadian addresses that should resolve to an unambiguous
+# result.
+#
+name: Valid Canadian addresses
+country: Canada
+addresses:
+
+- given: |
+    100 Bay Street
+    Toronto, ON M5H 1T1 
+  expect:
+    municipality: Toronto
+    province: ON
+    postal: M5H 1T1
+    country: Canada
+    street_number: 100
+    street_name: Bay Street
+    street_name_2: 
+    addressee: 
+    suite: 
+
+- given: |
+    Mr. Incognito
+    100 Bay Street
+    Toronto, ON M5H 1T1
+  expect:
+    municipality: Toronto
+    province: ON
+    postal: M5H 1T1
+    country: Canada
+    street_number: 100
+    street_name: Bay Street
+    street_name_2:
+    addressee: Mr. Incognito
+    suite: 
+
+- given: |
+    Mr. Incognito
+    221 - 100 Bay Street
+    Toronto, ON M5H 1T1
+    Canada
+  expect:
+    municipality: Toronto
+    province: ON
+    postal: M5H 1T1
+    country: Canada
+    street_number: 100
+    street_name: Bay Street
+    street_name_2:
+    addressee: Mr. Incognito
+    suite: 221
+

@@ -25,10 +25,12 @@ TARGET='build/SnailMailAddressParser'
 # The following uses `amdefine` for AMD support on Node.js
 # It should also work with RequireJS.
 # In future it should "just work" in other sensible cases.
+#
+# TODO: check for global "_" (underscore)
 LEADER = """
 if (typeof define !== 'function') { var define = require('amdefine')(module) }
 
-define(['lodash', 'XRegExp'], function (_, xregexp) { // begin AMD definition
+define(['lodash', 'xregexp'], function (_, xregexp) { // begin AMD definition
   var XRegExp = xregexp.XRegExp;
 /*  ---- Begin AMD definition ---- */
 """
@@ -39,7 +41,7 @@ FOOTER = """
 """
 
 task 'test', 'Run tests in Mocha (via "npm test")', (options) ->
-  log "Running > npm test"
+  log "Cake is running: npm test"
   spawn "npm", ['test'], customFds: [0, 1, 2]
 
 task 'toast', "Build the project into the build/ dir", (options) ->
@@ -56,7 +58,7 @@ task 'toast', "Build the project into the build/ dir", (options) ->
         'lib/': 'SnailMailAddressParser'
       release: TARGET + ".js"
     
-  log "toasting -> #{toast_options.config.release}"
+  log "Cake is toasting: #{toast_options.config.release}"
   toasting = new Toaster __dirname, toast_options
   toasting.build LEADER, FOOTER
 
@@ -64,7 +66,7 @@ task 'toast', "Build the project into the build/ dir", (options) ->
   toast_options.config.minify = true
   toast_options.config.release = TARGET + ".min.js"
 
-  log "toasting -> #{toast_options.config.release}"
+  log "Cake is toasting: #{toast_options.config.release}"
   toasting = new Toaster __dirname, toast_options
   toasting.build LEADER, FOOTER
 
