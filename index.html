@@ -6,7 +6,6 @@
 
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
     <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
 
     <title>SnailMailAddressParser by brianmhunt</title>
   </head>
@@ -30,25 +29,78 @@
       <section id="main_content">
         <h1>Try it out!</h1>
 
-<div>
- </div>
+        <p>
+        A few addresses in Canada will work at the moment, but with luck
+        we'll have quite a few more soon.
+        </p>
 
-<div>
-  <pre></pre>
-</div>
+<table>
+<thead>
+<tr>
+<th>Sample address</th>
+<th>Output</th>
+</tr>
+
+</thead>
+<tbody>
+  <tr>
+  <td valign='top'>
+  <p>
+  <textarea style='width: 300px; height: 180px; font-size: 120%;'
+  id='in' placeholder='Enter an address'
+  >100 Huntley Street
+55 Waterdown Line
+Kamloops BC, N5R 135
+Canada</textarea>
+    </p>
+  </td>
+  <td valign='top'>
+  <pre id='out'></pre>
+</td>
+</tbody>
+</table>
+
+<h2>Address not working?</h2>
+
+File <a href='https://github.com/brianmhunt/SnailMailAddressParser/issues'>
+    an issue over on Github</a>. Ideally if you format the address in YAML along the following lines we can plug it right into the unit tests:
+
+<pre>
+- given: |
+    100 Bay Street
+    Toronto, ON M5H 1T1 
+  expect:
+    municipality: Toronto
+    province: ON
+    postal: M5H 1T1
+    country: Canada
+    street_number: 100
+    street_name: Bay Street
+    street_name_2: 
+    addressee: 
+    suite: 
+</pre>
+
+Of course please do not hesitate to submit any other suggestions or pull requests.
+
       </section>
     </div>
 
-              <script type="text/javascript">
-            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-          </script>
-          <script type="text/javascript">
-            try {
-              var pageTracker = _gat._getTracker("UA-3105395-13");
-            pageTracker._trackPageview();
-            } catch(err) {}
-          </script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+<script src="javascripts/lodash.min.js"></script>
+<script src="javascripts/xregexp-all.js"></script>
+<script src='javascripts/main.js'></script>
+<script src='javascripts/snailmailaddressparser.js'></script>
+<script type="text/javascript">
+  var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+  document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+  </script>
+  <script type="text/javascript">
+    try {
+      var pageTracker = _gat._getTracker("UA-3105395-13");
+      pageTracker._trackPageview();
+    } catch(err) {}
+</script>
 
   </body>
 </html>
