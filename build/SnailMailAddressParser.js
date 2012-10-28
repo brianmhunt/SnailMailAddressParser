@@ -2,6 +2,7 @@ if (typeof define !== 'function') { var define = require('amdefine')(module) }
 
 define(['lodash', 'XRegExp'], function (_, xregexp) { // begin AMD definition
   var XRegExp = xregexp.XRegExp;
+/*  ---- Begin AMD definition ---- */
 /*
 # This is the base class for all strategies
 #
@@ -23,7 +24,7 @@ define(['lodash', 'XRegExp'], function (_, xregexp) { // begin AMD definition
 # A given `subclass` should, after its definition, call subclass.register()
 */
 
-var ALL_COUNTRY_IDS, AddressParser, AddressStrategy, COUNTRY_NAMES_MAP, CanadaStrategy, iso3166,
+var ALL_COUNTRY_IDS, AddressStrategy, COUNTRY_NAMES_MAP, CanadaStrategy, SnailMailAddressParser, iso3166,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -935,15 +936,15 @@ _.each(iso3166, function(country) {
   COUNTRIES_REX: XRegExp("(" + (_.keys(iso3166).join("|")) + ")")
 });
 
-AddressParser = (function() {
+SnailMailAddressParser = (function() {
 
-  function AddressParser(defaultCountry) {
+  function SnailMailAddressParser(defaultCountry) {
     this._defaultCountry = defaultCountry;
   }
 
-  AddressParser.prototype.AddressStrategy = AddressStrategy;
+  SnailMailAddressParser.prototype.AddressStrategy = AddressStrategy;
 
-  AddressParser.prototype.parse = function(str, defaultCountry) {
+  SnailMailAddressParser.prototype.parse = function(str, defaultCountry) {
     var canonical_name, country, last_line, lines, parsed;
     if (!_.isString(str)) {
       throw new Error("Address must be a string, got " + (typeof str) + ".");
@@ -970,9 +971,10 @@ AddressParser = (function() {
     return parsed;
   };
 
-  return AddressParser;
+  return SnailMailAddressParser;
 
 })();
 
-return new AddressParser();
-}); // end AMD definition
+/*  ---- End AMD definition ---- */
+  return new SnailMailAddressParser();
+});

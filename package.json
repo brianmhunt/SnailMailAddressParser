@@ -4,13 +4,13 @@
   "version": "0.1.1-alpha",
   "author": "Brian M Hunt <brianmhunt@gmail.com>",
   "dependencies": {
-    "lodash": ">= 0.9.0",
-    "XRegExp": ">= 2.0.0",
-    "amdefine": ">=0.0.2"
+    "lodash"  : ">= 0.9.0",
+    "XRegExp" : ">= 2.0.0",
+    "amdefine": ">= 0.0.2"
   },
   "devDependencies": {
-    "coffeescript": ">= 1.3.0",
-    "coffee-toaster"  : "0.6.1",
+    "coffee-script" : ">= 1.3.0",
+    "coffee-toaster": ">= 0.6.1",
     "mocha": "*",
     "chai": "*"
   },
