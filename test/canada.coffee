@@ -4,7 +4,7 @@
 # --- Included at the top of each test file
 _ = require('lodash'); chai = require('chai')
 assert = chai.assert; expect = chai.expect; should = chai.should()
-ap = require("../build/jAddressParser")
+ap = require("../build/SnailMailAddressParser")
 color = require('mocha').reporters.Base.color
 # ---
 

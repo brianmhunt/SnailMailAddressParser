@@ -2,14 +2,14 @@
 # AddressParser
 # -------------
 #
-# This is the main class, exported as jAddressParser.
+# This is the main class, exported as SnailMailAddressParser
 #
 #
 # Requires
 # ~~~~~~~~
-#<< jAddressParser/*
+#<< SnailMailAddressParser/*
 #
-class AddressParser
+class SnailMailAddressParser
   constructor: (defaultCountry) ->
     @_defaultCountry = defaultCountry
 
