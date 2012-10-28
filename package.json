@@ -26,6 +26,11 @@
     "snail",
     "mail"
   ],
+  "homepage": "http://brianmhunt.github.com/SnailMailAddressParser/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brianmhunt/SnailMailAddressParser.git"
+  },
   "license": "MIT",
   "engines": {
     "node": ">=0.8"

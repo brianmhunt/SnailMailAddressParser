@@ -85,4 +85,4 @@ test_files.forEach (test_file) ->
     yaml.loadAll data, (test_set) ->
       address_tester(test_set)
 
-
+console.log "Completed tests."
