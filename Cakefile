@@ -20,7 +20,7 @@
 {spawn} = require 'child_process'
 {log} = require 'util'
 
-TARGET='build/SnailMailAddressParser'
+TARGET='build/snailmailaddressparser'
 
 # The following uses `amdefine` for AMD support on Node.js
 # It should also work with RequireJS.

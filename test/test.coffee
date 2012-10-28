@@ -6,7 +6,7 @@ _ = require('lodash'); chai = require('chai')
 yaml = require('js-yaml')
 assert = chai.assert; expect = chai.expect; should = chai.should()
 color = require('mocha').reporters.Base.color
-smap = require("../build/SnailMailAddressParser")
+smap = require("../build/snailmailaddressparser")
 
 
 # Ensure the type of import is what we expect

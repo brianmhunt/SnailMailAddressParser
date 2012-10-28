@@ -1,5 +1,5 @@
 {
-  "name": "SnailMailAddressParser",
+  "name": "snailmailaddressparser",
   "description": "A Javascript library to parse snail mail addresses into components",
   "version": "0.1.1-alpha",
   "author": "Brian M Hunt <brianmhunt@gmail.com>",

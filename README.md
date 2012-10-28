@@ -21,7 +21,7 @@ Usage
 
 An example in `node.js`:
 
-    > smap = require('SnailMailAddressParser')
+    > smap = require('snailmailaddressparser')
 
     > smap.parse("100 Bay Street\nToronto, ON M5H 1T1\nCanada")
     { suite: '',
@@ -37,7 +37,7 @@ An example in `node.js`:
 API
 ---
 
-### `smap = require('SnailMailAddressParser')`
+### `smap = require('snailmailaddressparser')`
 
 Return an instance of the Address Parser. Uses the
 [amdefine](https://github.com/jrburke/amdefine) module for Node.js
@@ -74,9 +74,9 @@ expected fields. See for example `test/canada.coffee`.
 Browser Installation
 --------------------
 
-To install on the browser you can simply copy `build/SnailMailAddressParser.js`
-or `build/SnailMailAddressParser.min.js` to your project and include it in your
-project with eg the RequireJS `require('jAddressParser')`.
+To install on the browser you can simply copy `build/snailmailaddressparser.js`
+or `build/snailmailaddressparser.min.js` to your project and include it in your
+project with eg the RequireJS `require('snailmailaddressparser')`.
 
 - [lodash](https://github.com/bestiejs/lodash) (or [underscore](http://underscorejs.org/))
 - [XRegExp](http://xregexp.com/)
@@ -99,14 +99,14 @@ Cakefile targets
 #### `cake toast`
 
 Convert the coffeescript in the `lib/` directory into a usable javascript AMD
-modules `build/SnailMailAddressParser.js` and 
-`build/SnailMailAddressParser.min.js` by calling `cake toast`.
+modules `build/snailmailaddressparser.js` and 
+`build/snailmailaddressparser.min.js` by calling `cake toast`.
 
 #### `cake test`
 
 Run [Mocha](http://visionmedia.github.com/mocha/)-based tests on the project.
 
-### `cake deps`
+#### `cake deps`
 
 Install dependencies in the `node_modules` subdirectory of the project.
 
