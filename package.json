@@ -1,6 +1,6 @@
 {
   "name": "snailmailaddressparser",
-  "version": "0.1.6-alpha",
+  "version": "0.1.8-alpha",
   "description": "A Javascript library to parse snail mail addresses into components",
   "author": "Brian M Hunt <brianmhunt@gmail.com>",
   "dependencies": {
@@ -14,6 +14,7 @@
     "uglify-js2": "*",
     "glob": "*",
     "mocha": "*",
+    "semver": "*",
     "chai": "*"
   },
   "scripts": {

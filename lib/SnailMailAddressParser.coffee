@@ -16,6 +16,8 @@ class SnailMailAddressParser
   # expose for testing
   AddressStrategy: AddressStrategy
 
+  Version: VERSION # exposed through the build header, which parses package.json
+
   parse: (str, defaultCountry) ->
     if not _.isString(str)
       throw new Error("Address must be a string, got #{typeof str}.")

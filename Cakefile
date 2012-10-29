@@ -64,7 +64,7 @@ if (typeof require !== 'function') {
 }
 
 define(['underscore', 'xregexp'], function (_, xregexp) {
-  var XRegExp = xregexp.XRegExp;
+  var XRegExp = xregexp.XRegExp, VERSION;
   XRegExp.addUnicodePackage();
 /*  ---- Begin AMD content ---- */
 """
@@ -85,6 +85,10 @@ task 'toast', "Build the project into the build/ dir", (options) ->
   # following. An alternative to the following would be figuring out Grunt.
   source_dir = require('path').join(__dirname, SRC_DIR)
 
+  version = JSON.parse(fs.readFileSync("package.json")).version
+
+  console.log "Compiling version #{version}"
+
   sources = []
 
   # Get all source files. Preserve the order in COFFEE_SRC
@@ -103,7 +107,7 @@ task 'toast', "Build the project into the build/ dir", (options) ->
     return "\n// -- from: #{src_file} -- \\\\\n" + js
   ).join("\n")
 
-  contents = LEADER + source + FOOTER
+  contents = LEADER + "\nVERSION = \"#{version}\";" + source + FOOTER
 
   console.log "Writing #{DEST}.js"
   fs.writeFileSync("#{DEST}.js", contents, 'utf8')

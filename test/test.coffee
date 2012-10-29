@@ -10,11 +10,15 @@ smap = require("../build/snailmailaddressparser")
 
 # Ensure the type of import is what we expect
 describe "SnailMailAddressParser", ->
-  it("should be an object with a parse function", ->
+  it "should be an object with a parse function", ->
     expect(smap).to.be.a('object')
     expect(smap).to.have.property('parse')
     expect(smap.parse).to.be.a('function')
-  )
+
+  it "should have a semver compatible version (#{smap.Version})", ->
+    assert require('semver').valid(smap.Version)
+
+
 
 #
 #   Strategy Unit Tests
