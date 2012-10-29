@@ -17,205 +17,17 @@ if (typeof require !== 'function') {
 }
 
 define(['underscore', 'xregexp'], function (_, xregexp) {
-  var XRegExp = xregexp.XRegExp;
-/*  ---- Begin AMD content ---- */
-/*
-# This is the base class for all strategies
-#
-# TODO: Someday, think about how to get postal verification from the Universal
-# Postal Union
-#
-# TODO: Address verification with eg Geocoder integration
-*/
-
-/*
-#   AddressStrategy
-#   ---------------
-# << iso3166
-#
-# This class is intended to be subclassed, and expects parse_address to be
-# overloaded. function should take a series of lines and return a simple
-# JSONable object that adequately describes the components of the address.
-#
-# A given `subclass` should, after its definition, call subclass.register()
-*/
-
-var ALL_COUNTRY_IDS, AddressStrategy, COUNTRY_NAMES_MAP, CanadaStrategy, LineMatcher, SnailMailAddressParser, iso3166,
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-AddressStrategy = (function() {
-
-  function AddressStrategy() {}
-
-  AddressStrategy._registered_strategies = {};
-
-  /*
-     * Register this subclass as a strategy
-     * Maps @name to the subclass calling register (@name is the canonical
-     * iso3166 name)
-  */
-
-
-  AddressStrategy.prototype.register = function() {
-    var name;
-    name = this.name.toLowerCase();
-    if (!name) {
-      throw new Error("Strategies require a `name`");
-    }
-    if (__indexOf.call(AddressStrategy._registered_strategies, name) >= 0) {
-      throw new Error("Strategy " + name + " registered twice");
-    }
-    return AddressStrategy._registered_strategies[name] = this;
-  };
-
-  AddressStrategy.prototype.run_rex_line_strategy = function(matcher_array, addr_lines) {
-    var result;
-    result = {};
-    if (matcher_array.length !== addr_lines.length) {
-      throw new Error(("Matcher expects " + matcher_array.length + " lines,") + (" but the address has " + addr_lines.length + " lines."));
-    }
-    _.each(matcher_array, function(line_strategy, index) {
-      var matches;
-      matches = line_strategy.match(addr_lines[index]);
-      return _.extend(result, matches);
-    });
-    return result;
-  };
-
-  AddressStrategy.prototype.run_line_strategies = function(strategies, addr_lines) {
-    var results,
-      _this = this;
-    results = null;
-    _.any(strategies, function(strat, index) {
-      try {
-        results = _this.run_rex_line_strategy(strat, addr_lines);
-      } catch (err) {
-        return false;
-      }
-      return results !== null;
-    });
-    return results;
-  };
-
-  AddressStrategy.prototype.debug_line_strategies = function(strategies, addr_lines) {
-    var addr_str,
-      _this = this;
-    addr_str = _.map(addr_lines, function(line, idx) {
-      return "" + idx + ": " + line;
-    }).join("\n");
-    console.log("\n** Debugging:\n" + addr_str);
-    return _.each(strategies, function(strat, index) {
-      var results;
-      if (strat.length !== addr_lines.length) {
-        return;
-      }
-      try {
-        return results = _this.run_rex_line_strategy(strat, addr_lines);
-      } catch (err) {
-        return console.log("Rex failed: " + err);
-      }
-    });
-  };
-
-  return AddressStrategy;
-
-})();
-
-AddressStrategy.do_parse_address = function(country, lines, address_string) {
-  var strategy, _ref;
-  if (_ref = !country, __indexOf.call(AddressStrategy._registered_strategies, _ref) >= 0) {
-    throw new Error("No strategy to parse an address for " + country);
-  }
-  strategy = AddressStrategy._registered_strategies[country];
-  return strategy.parse_address(lines, address_string);
-};
-
-/*
-#   CanadaStrategy
-#   --------------
-# A way to parse Canadian addresses
-#
-# Reference: 'Addressing Guidelines'
-# <http://www.canadapost.ca/tools/pg/manual/PGaddress-e.asp>
-#
-*/
-
-
-CanadaStrategy = (function(_super) {
-  var ADDRESSEE, MUNICIPALITY, MUNICIPALITY_WITH_POSTAL, POSTAL, STREET, STREET2, provinces_list;
-
-  __extends(CanadaStrategy, _super);
-
-  function CanadaStrategy() {
-    return CanadaStrategy.__super__.constructor.apply(this, arguments);
-  }
-
-  CanadaStrategy.prototype.name = 'canada';
-
-  provinces_list = ["AB", "Alberta", "BC", "British\\s+Columbia", "Manitoba", "MB", "New Brunswick", "NB", "Newfoundland\\s+and\\s+Labrador", "Newfoundland", "NF", "NL", "Newfoundland\\s+&\\s+Labrador", "Northwest Territories", "NT", "Nova Scotia", "NS", "Nunavut", "NU", "ON", "Ontario", "Prince\\s+Edward\\s+Island", "PE", "PEI", "Quebec", "QC", "Saskatchewan", "SK", "Yukon", "YT"];
-
-  ADDRESSEE = new LineMatcher("Addressee", "(?<addressee> [\\w\\s-\\.]+)");
-
-  STREET = new LineMatcher("Street", "(?:(?<suite> [^-]+) \\s* - \\s*)?    (?<street_number> \\d+)? \\s+    (?<street_name> .*?) \\s*");
-
-  STREET2 = new LineMatcher("Second street line", "(.*)");
-
-  MUNICIPALITY = new LineMatcher("Municipality and Province", "(?<municipality> \\w[\\w\\s\.]+?) \\s* ,? \\s*    (?<province> " + (provinces_list.join("|")) + ")");
-
-  POSTAL = new LineMatcher("Postal code", "(?<postal> \s*\\w\\d\\w\\s*\\d\\w\\d)");
-
-  MUNICIPALITY_WITH_POSTAL = new LineMatcher("Municipality, " + "province and postal code", "" + MUNICIPALITY + " (?: \\sw ,? \\s* " + POSTAL + ")?");
-
-  /*
-    # Parse an address into components
-  */
-
-
-  CanadaStrategy.prototype.parse_address = function(lines, address_string) {
-    var fields, line_strats, results;
-    fields = {
-      suite: '',
-      addressee: '',
-      street_number: '',
-      street_name_2: '',
-      municipality: '',
-      province: '',
-      postal: '',
-      country: 'Canada'
-    };
-    if (lines.length < 2) {
-      throw new Error("Canadian addresses must be at least two lines.");
-    }
-    line_strats = [];
-    line_strats.push([ADDRESSEE, STREET, STREET2, MUNICIPALITY, POSTAL]);
-    line_strats.push([ADDRESSEE, STREET, MUNICIPALITY, POSTAL]);
-    line_strats.push([STREET, STREET2, MUNICIPALITY, POSTAL]);
-    line_strats.push([STREET, MUNICIPALITY, POSTAL]);
-    line_strats.push([ADDRESSEE, STREET, STREET2, MUNICIPALITY_WITH_POSTAL]);
-    line_strats.push([ADDRESSEE, STREET, MUNICIPALITY_WITH_POSTAL]);
-    line_strats.push([STREET, STREET2, MUNICIPALITY_WITH_POSTAL]);
-    line_strats.push([STREET, MUNICIPALITY_WITH_POSTAL]);
-    results = this.run_line_strategies(line_strats, lines) || {};
-    if (_.isEmpty(results)) {
-      this.debug_line_strategies(line_strats, lines);
-    }
-    return _.defaults(results, fields);
-  };
-
-  return CanadaStrategy;
-
-})(AddressStrategy);
-
-new CanadaStrategy().register();
-
+  var XRegExp = xregexp.XRegExp, VERSION;
+  XRegExp.addUnicodePackage();
+/*  ---- Begin AMD content ---- */VERSION = "0.1.8-alpha";
+// -- from: lib/iso3166.coffee -- \\
 /*
  * ISO 3166 country codes
  *
  * See eg https://github.com/lukes/ISO-3166-Countries-with-Regional-Codes
 */
 
+var ALL_COUNTRY_IDS, COUNTRIES_REX, COUNTRY_NAMES_MAP, iso3166;
 
 iso3166 = [
   {
@@ -983,36 +795,280 @@ _.each(iso3166, function(country) {
   });
 });
 
-({
-  COUNTRIES_REX: XRegExp("(" + (_.keys(iso3166).join("|")) + ")")
-});
+COUNTRIES_REX = XRegExp("(" + (_.keys(iso3166).join("|")) + ")");
+
+
+// -- from: lib/LineMatcher.coffee -- \\
+var LineMatcher,
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 LineMatcher = (function() {
 
-  function LineMatcher(name, expression, rex_options) {
+  function LineMatcher(name, expression, options) {
     this.name = name;
     this.expression = expression;
-    this.rex_options = rex_options != null ? rex_options : 'xi';
-    this.rex = XRegExp("^@" + expression + "$", this.rex_options);
+    if (options == null) {
+      options = {};
+    }
+    this.options = _.defaults(options, {
+      rex_flags: 'xi',
+      valid_tests: [],
+      invalid_tests: []
+    });
+    this.rex = XRegExp("^" + expression + "$", this.options.rex_flags);
   }
 
   LineMatcher.prototype.match = function(line) {
-    var EXCLUDED, matches;
+    var EXCLUDED, matched_properties, matches;
     matches = XRegExp.exec(line, this.rex);
     if (matches === null) {
       return null;
     }
     EXCLUDED = ['index', 'input'];
-    matches = _.omit(_.keys(matches), EXCLUDED);
-    matches = _.filter(matched_keys, function(s) {
-      return isNaN(s);
+    matched_properties = {};
+    _.each(_.keys(matches), function(key) {
+      if (__indexOf.call(EXCLUDED, key) < 0 && isNaN(key)) {
+        return matched_properties[key] = matches[key];
+      }
     });
-    return matches;
+    return matched_properties;
   };
+
+  LineMatcher.prototype.isLineMatcherClass = true;
 
   return LineMatcher;
 
 })();
+
+
+// -- from: lib/AddressStrategy.coffee -- \\
+/*
+# This is the base class for all strategies
+#
+# TODO: Someday, think about how to get postal verification from the Universal
+# Postal Union
+#
+# TODO: Address verification with eg Geocoder integration
+*/
+
+/*
+#   AddressStrategy
+#   ---------------
+#
+# This class is intended to be subclassed, and expects parse_address to be
+# overloaded. function should take a series of lines and return a simple
+# JSONable object that adequately describes the components of the address.
+#
+# A given `subclass` should, after its definition, call subclass.register()
+*/
+
+var AddressStrategy,
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+AddressStrategy = (function() {
+
+  function AddressStrategy() {}
+
+  AddressStrategy._registered_strategies = {};
+
+  /*
+     * Register this subclass as a strategy
+     * Maps @name to the subclass calling register (@name is the canonical
+     * iso3166 name)
+  */
+
+
+  AddressStrategy.prototype.register = function() {
+    var name;
+    name = this.name.toLowerCase();
+    if (!name) {
+      throw new Error("Strategies require a `name`");
+    }
+    if (__indexOf.call(AddressStrategy._registered_strategies, name) >= 0) {
+      throw new Error("Strategy " + name + " registered twice");
+    }
+    return AddressStrategy._registered_strategies[name] = this;
+  };
+
+  AddressStrategy.all_strategies = function() {
+    return this._registered_strategies;
+  };
+
+  AddressStrategy.prototype.run_rex_line_strategy = function(matcher_array, addr_lines) {
+    var result;
+    result = {};
+    if (matcher_array.length !== addr_lines.length) {
+      throw new Error(("Matcher expects " + matcher_array.length + " lines,") + (" but the address has " + addr_lines.length + " lines."));
+    }
+    _.each(matcher_array, function(line_strategy, index) {
+      var matches;
+      matches = line_strategy.match(addr_lines[index]);
+      if (matches === null) {
+        throw new Error("Line " + index + " is not a valid " + line_strategy.name);
+      }
+      return _.extend(result, matches);
+    });
+    return result;
+  };
+
+  AddressStrategy.prototype.run_line_strategies = function(strategies, addr_lines) {
+    var results,
+      _this = this;
+    results = null;
+    _.any(strategies, function(strat, index) {
+      try {
+        results = _this.run_rex_line_strategy(strat, addr_lines);
+      } catch (err) {
+        return false;
+      }
+      return results !== null;
+    });
+    return results;
+  };
+
+  AddressStrategy.prototype.debug_line_strategies = function(strategies, addr_lines) {
+    var addr_str,
+      _this = this;
+    addr_str = _.map(addr_lines, function(line, idx) {
+      return "" + idx + ": " + line;
+    }).join("\n");
+    console.log("\n** Debugging:\n" + addr_str);
+    return _.each(strategies, function(strat, index) {
+      var results;
+      console.log("Skipping strategy " + index + "; mismatched line count");
+      if (strat.length !== addr_lines.length) {
+        return;
+      }
+      try {
+        return results = _this.run_rex_line_strategy(strat, addr_lines);
+      } catch (err) {
+        return console.log("Rex failed: " + err);
+      }
+    });
+  };
+
+  AddressStrategy.prototype.parse_address = function(lines, address_string) {
+    var line_strats, results;
+    if (lines.length < 2) {
+      throw new Error("Addresses must be at least two lines.");
+    }
+    line_strats = this.line_strategies() || [];
+    results = this.run_line_strategies(line_strats, lines) || {};
+    if (_.isEmpty(results)) {
+      this.debug_line_strategies(line_strats, lines);
+    }
+    return _.defaults(results, this.expected_fields());
+  };
+
+  return AddressStrategy;
+
+})();
+
+AddressStrategy.do_parse_address = function(country, lines, address_string) {
+  var strategy, _ref;
+  if (_ref = !country, __indexOf.call(AddressStrategy._registered_strategies, _ref) >= 0) {
+    throw new Error("No strategy to parse an address for " + country);
+  }
+  strategy = AddressStrategy._registered_strategies[country];
+  return strategy.parse_address(lines, address_string);
+};
+
+
+// -- from: lib/CanadaStrategy.coffee -- \\
+/*
+#   CanadaStrategy
+#   --------------
+# A way to parse Canadian addresses
+#
+# Reference: 'Addressing Guidelines'
+# <http://www.canadapost.ca/tools/pg/manual/PGaddress-e.asp>
+#
+*/
+
+var CanadaStrategy,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+CanadaStrategy = (function(_super) {
+  var ADDRESSEE, MUNICIPALITY, MUNICIPALITY_WITH_POSTAL, POSTAL, STREET, STREET2, provinces_list;
+
+  __extends(CanadaStrategy, _super);
+
+  function CanadaStrategy() {
+    return CanadaStrategy.__super__.constructor.apply(this, arguments);
+  }
+
+  CanadaStrategy.prototype.name = 'canada';
+
+  provinces_list = ["AB", "Alberta", "BC", "British\\s+Columbia", "Manitoba", "MB", "New Brunswick", "NB", "Newfoundland\\s+and\\s+Labrador", "Newfoundland", "NF", "NL", "Newfoundland\\s+&\\s+Labrador", "Northwest Territories", "NT", "Nova Scotia", "NS", "Nunavut", "NU", "ON", "Ontario", "Prince\\s+Edward\\s+Island", "PE", "PEI", "Quebec", "QC", "Saskatchewan", "SK", "Yukon", "YT"];
+
+  ADDRESSEE = new LineMatcher("Addressee", "(?<addressee> [\\p{L}\\s-\\.]+)", {
+    valid_tests: ["Mary Swånson"],
+    invalid_tests: ["100 Sampsonite Drive"]
+  });
+
+  STREET = new LineMatcher("Street", "(?:(?<suite> [^-]+) \\s* - \\s*)?    (?<street_number> \\d+)? \\s+    (?<street_name> .*?)", {
+    valid_tests: ["100 huntley street", "Ünit 215 - 100 Huntley Street"],
+    invalid_tests: ["Wallaby Lane"]
+  });
+
+  STREET2 = new LineMatcher("Second street line", "(.+)", {
+    valid_tests: ["Anything"],
+    invalid_tests: [""]
+  });
+
+  MUNICIPALITY = new LineMatcher("Municipality and Province", "(?<municipality> [\\p{L}\\s\\.]+?) \\s* ,? \\s*     (?<province> " + (provinces_list.join("|")) + ")", {
+    valid_tests: ["St. Pétersberg, ON", "Hudsonville, QC"],
+    invalid_tests: ["St. Peteresberg, Peterborough, 10005"]
+  });
+
+  POSTAL = new LineMatcher("Postal code", "(?<postal> \s*\\w\\d\\w\\s*\\d\\w\\d)", {
+    valid_tests: ["H0H0H0", "H0H  0H0"],
+    invalid_tests: ["HoH 0H0", "HoH 0ü0"]
+  });
+
+  MUNICIPALITY_WITH_POSTAL = new LineMatcher("Municipality, province and postal code", "" + MUNICIPALITY.expression + " (?: \\s* ,? \\s* " + POSTAL.expression + ")?", {
+    valid_tests: ["One, QC, M5R 1V2", "Two Tee, ON"],
+    invalid_tests: ["Two, Two, Two"]
+  });
+
+  CanadaStrategy.prototype.expected_fields = function() {
+    return {
+      suite: '',
+      addressee: '',
+      street_number: '',
+      street_name_2: '',
+      municipality: '',
+      province: '',
+      postal: '',
+      country: 'Canada'
+    };
+  };
+
+  CanadaStrategy.prototype.line_strategies = function() {
+    var line_strats;
+    line_strats = [];
+    line_strats.push([ADDRESSEE, STREET, STREET2, MUNICIPALITY, POSTAL]);
+    line_strats.push([ADDRESSEE, STREET, MUNICIPALITY, POSTAL]);
+    line_strats.push([STREET, STREET2, MUNICIPALITY, POSTAL]);
+    line_strats.push([STREET, MUNICIPALITY, POSTAL]);
+    line_strats.push([ADDRESSEE, STREET, STREET2, MUNICIPALITY_WITH_POSTAL]);
+    line_strats.push([ADDRESSEE, STREET, MUNICIPALITY_WITH_POSTAL]);
+    line_strats.push([STREET, STREET2, MUNICIPALITY_WITH_POSTAL]);
+    line_strats.push([STREET, MUNICIPALITY_WITH_POSTAL]);
+    return line_strats;
+  };
+
+  return CanadaStrategy;
+
+})(AddressStrategy);
+
+new CanadaStrategy().register();
+
+
+// -- from: lib/SnailMailAddressParser.coffee -- \\
+var SnailMailAddressParser,
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 SnailMailAddressParser = (function() {
 
@@ -1021,6 +1077,8 @@ SnailMailAddressParser = (function() {
   }
 
   SnailMailAddressParser.prototype.AddressStrategy = AddressStrategy;
+
+  SnailMailAddressParser.prototype.Version = VERSION;
 
   SnailMailAddressParser.prototype.parse = function(str, defaultCountry) {
     var canonical_name, country, last_line, lines, parsed;
@@ -1052,7 +1110,6 @@ SnailMailAddressParser = (function() {
   return SnailMailAddressParser;
 
 })();
-
 /*  ---- End AMD content ---- */
   return new SnailMailAddressParser();
 });
