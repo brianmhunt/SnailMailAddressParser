@@ -40,7 +40,7 @@ define(['underscore', 'xregexp'], function (_, xregexp) {
 # A given `subclass` should, after its definition, call subclass.register()
 */
 
-var ALL_COUNTRY_IDS, AddressStrategy, COUNTRY_NAMES_MAP, CanadaStrategy, SnailMailAddressParser, iso3166,
+var ALL_COUNTRY_IDS, AddressStrategy, COUNTRY_NAMES_MAP, CanadaStrategy, LineMatcher, SnailMailAddressParser, iso3166,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -70,27 +70,16 @@ AddressStrategy = (function() {
     return AddressStrategy._registered_strategies[name] = this;
   };
 
-  AddressStrategy.prototype.run_rex_line_strategy = function(regexes, addr_lines) {
+  AddressStrategy.prototype.run_rex_line_strategy = function(matcher_array, addr_lines) {
     var result;
     result = {};
-    if (regexes.length !== addr_lines.length) {
-      throw new Error(("Parsing strategy expects " + regexes.length + " lines, but ") + ("the address has " + addr_lines.length + " lines."));
+    if (matcher_array.length !== addr_lines.length) {
+      throw new Error(("Matcher expects " + matcher_array.length + " lines,") + (" but the address has " + addr_lines.length + " lines."));
     }
-    _.each(regexes, function(rex, index) {
-      var EXCLUDED, matched_keys, matches;
-      rex = XRegExp("^" + rex + "$", 'x');
-      matches = XRegExp.exec(addr_lines[index], rex);
-      if (matches === null) {
-        throw new Error("Line " + index + " does not match " + rex);
-      }
-      EXCLUDED = ['index', 'input'];
-      matched_keys = _.keys(matches);
-      matched_keys = _.filter(matched_keys, function(s) {
-        return isNaN(s) && __indexOf.call(EXCLUDED, s) < 0;
-      });
-      return _.each(matched_keys, function(key) {
-        return result[key] = matches[key];
-      });
+    _.each(matcher_array, function(line_strategy, index) {
+      var matches;
+      matches = line_strategy.match(addr_lines[index]);
+      return _.extend(result, matches);
     });
     return result;
   };
@@ -119,7 +108,9 @@ AddressStrategy = (function() {
     console.log("\n** Debugging:\n" + addr_str);
     return _.each(strategies, function(strat, index) {
       var results;
-      console.log("-- Strategy " + index + " --");
+      if (strat.length !== addr_lines.length) {
+        return;
+      }
       try {
         return results = _this.run_rex_line_strategy(strat, addr_lines);
       } catch (err) {
@@ -165,17 +156,17 @@ CanadaStrategy = (function(_super) {
 
   provinces_list = ["AB", "Alberta", "BC", "British\\s+Columbia", "Manitoba", "MB", "New Brunswick", "NB", "Newfoundland\\s+and\\s+Labrador", "Newfoundland", "NF", "NL", "Newfoundland\\s+&\\s+Labrador", "Northwest Territories", "NT", "Nova Scotia", "NS", "Nunavut", "NU", "ON", "Ontario", "Prince\\s+Edward\\s+Island", "PE", "PEI", "Quebec", "QC", "Saskatchewan", "SK", "Yukon", "YT"];
 
-  ADDRESSEE = "(?<addressee> [\\w\\s-\\.]+)";
+  ADDRESSEE = new LineMatcher("Addressee", "(?<addressee> [\\w\\s-\\.]+)");
 
-  STREET = "(?:(?<suite> [^-]+) \\s* - \\s*)?    (?<street_number> \\d+)? \\s+    (?<street_name> .*?) \\s*";
+  STREET = new LineMatcher("Street", "(?:(?<suite> [^-]+) \\s* - \\s*)?    (?<street_number> \\d+)? \\s+    (?<street_name> .*?) \\s*");
 
-  STREET2 = "(.*)";
+  STREET2 = new LineMatcher("Second street line", "(.*)");
 
-  MUNICIPALITY = "    (?<municipality> \\w[\\w\\s\.]+?) \\s* ,? \\s*    (?<province> " + (provinces_list.join("|")) + ") \\s*";
+  MUNICIPALITY = new LineMatcher("Municipality and Province", "(?<municipality> \\w[\\w\\s\.]+?) \\s* ,? \\s*    (?<province> " + (provinces_list.join("|")) + ")");
 
-  POSTAL = "(?<postal> \s*\\w\\d\\w\\s*\\d\\w\\d)";
+  POSTAL = new LineMatcher("Postal code", "(?<postal> \s*\\w\\d\\w\\s*\\d\\w\\d)");
 
-  MUNICIPALITY_WITH_POSTAL = "" + MUNICIPALITY + " \\s* ,? \\s* " + POSTAL;
+  MUNICIPALITY_WITH_POSTAL = new LineMatcher("Municipality, " + "province and postal code", "" + MUNICIPALITY + " (?: \\sw ,? \\s* " + POSTAL + ")?");
 
   /*
     # Parse an address into components
@@ -995,6 +986,33 @@ _.each(iso3166, function(country) {
 ({
   COUNTRIES_REX: XRegExp("(" + (_.keys(iso3166).join("|")) + ")")
 });
+
+LineMatcher = (function() {
+
+  function LineMatcher(name, expression, rex_options) {
+    this.name = name;
+    this.expression = expression;
+    this.rex_options = rex_options != null ? rex_options : 'xi';
+    this.rex = XRegExp("^@" + expression + "$", this.rex_options);
+  }
+
+  LineMatcher.prototype.match = function(line) {
+    var EXCLUDED, matches;
+    matches = XRegExp.exec(line, this.rex);
+    if (matches === null) {
+      return null;
+    }
+    EXCLUDED = ['index', 'input'];
+    matches = _.omit(_.keys(matches), EXCLUDED);
+    matches = _.filter(matched_keys, function(s) {
+      return isNaN(s);
+    });
+    return matches;
+  };
+
+  return LineMatcher;
+
+})();
 
 SnailMailAddressParser = (function() {
 
