@@ -29,9 +29,9 @@ class CanadaStrategy extends AddressStrategy
     "Yukon", "YT",
   ]
 
-  ADDRESSEE = new LineMatcher("Addressee", "(?<addressee> [A-Za-z\\s-\\.]+)",
+  ADDRESSEE = new LineMatcher("Addressee", "(?<addressee> [\\p{L}\\s-\\.]+)",
     valid_tests: [
-      "Mary Swanson",
+      "Mary Swånson", # (unicode)
     ],
     invalid_tests: [
       "100 Sampsonite Drive"
@@ -43,7 +43,7 @@ class CanadaStrategy extends AddressStrategy
     (?<street_name> .*?)",
     valid_tests: [
       "100 huntley street",
-      "Unit 215 - 100 Huntley Street"
+      "Ünit 215 - 100 Huntley Street" # (unicode)
     ],
     invalid_tests: [
       "Wallaby Lane"
@@ -58,10 +58,10 @@ class CanadaStrategy extends AddressStrategy
     ])
 
   MUNICIPALITY = new LineMatcher("Municipality and Province",
-    "(?<municipality> \\w[\\w\\s\\.]+?) \\s* ,? \\s*
+    "(?<municipality> [\\p{L}\\s\\.]+?) \\s* ,? \\s*
      (?<province> #{provinces_list.join("|")})",
      valid_tests: [
-        "St. Petersberg, ON",
+        "St. Pétersberg, ON", # (unicode)
         "Hudsonville, QC",
      ],
      invalid_tests: [
@@ -76,7 +76,8 @@ class CanadaStrategy extends AddressStrategy
       "H0H  0H0",
     ],
     invalid_tests: [
-      "HoH 0H0"
+      "HoH 0H0",
+      "HoH 0ü0" # (!unicode)
     ]
   )
 

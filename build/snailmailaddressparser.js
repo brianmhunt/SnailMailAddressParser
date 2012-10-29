@@ -18,6 +18,7 @@ if (typeof require !== 'function') {
 
 define(['underscore', 'xregexp'], function (_, xregexp) {
   var XRegExp = xregexp.XRegExp;
+  XRegExp.addUnicodePackage();
 /*  ---- Begin AMD content ---- */
 // -- from: lib/iso3166.coffee -- \\
 /*
@@ -1001,13 +1002,13 @@ CanadaStrategy = (function(_super) {
 
   provinces_list = ["AB", "Alberta", "BC", "British\\s+Columbia", "Manitoba", "MB", "New Brunswick", "NB", "Newfoundland\\s+and\\s+Labrador", "Newfoundland", "NF", "NL", "Newfoundland\\s+&\\s+Labrador", "Northwest Territories", "NT", "Nova Scotia", "NS", "Nunavut", "NU", "ON", "Ontario", "Prince\\s+Edward\\s+Island", "PE", "PEI", "Quebec", "QC", "Saskatchewan", "SK", "Yukon", "YT"];
 
-  ADDRESSEE = new LineMatcher("Addressee", "(?<addressee> [A-Za-z\\s-\\.]+)", {
-    valid_tests: ["Mary Swanson"],
+  ADDRESSEE = new LineMatcher("Addressee", "(?<addressee> [\\p{L}\\s-\\.]+)", {
+    valid_tests: ["Mary Swånson"],
     invalid_tests: ["100 Sampsonite Drive"]
   });
 
   STREET = new LineMatcher("Street", "(?:(?<suite> [^-]+) \\s* - \\s*)?    (?<street_number> \\d+)? \\s+    (?<street_name> .*?)", {
-    valid_tests: ["100 huntley street", "Unit 215 - 100 Huntley Street"],
+    valid_tests: ["100 huntley street", "Ünit 215 - 100 Huntley Street"],
     invalid_tests: ["Wallaby Lane"]
   });
 
@@ -1016,14 +1017,14 @@ CanadaStrategy = (function(_super) {
     invalid_tests: [""]
   });
 
-  MUNICIPALITY = new LineMatcher("Municipality and Province", "(?<municipality> \\w[\\w\\s\\.]+?) \\s* ,? \\s*     (?<province> " + (provinces_list.join("|")) + ")", {
-    valid_tests: ["St. Petersberg, ON", "Hudsonville, QC"],
+  MUNICIPALITY = new LineMatcher("Municipality and Province", "(?<municipality> [\\p{L}\\s\\.]+?) \\s* ,? \\s*     (?<province> " + (provinces_list.join("|")) + ")", {
+    valid_tests: ["St. Pétersberg, ON", "Hudsonville, QC"],
     invalid_tests: ["St. Peteresberg, Peterborough, 10005"]
   });
 
   POSTAL = new LineMatcher("Postal code", "(?<postal> \s*\\w\\d\\w\\s*\\d\\w\\d)", {
     valid_tests: ["H0H0H0", "H0H  0H0"],
-    invalid_tests: ["HoH 0H0"]
+    invalid_tests: ["HoH 0H0", "HoH 0ü0"]
   });
 
   MUNICIPALITY_WITH_POSTAL = new LineMatcher("Municipality, province and postal code", "" + MUNICIPALITY.expression + " (?: \\s* ,? \\s* " + POSTAL.expression + ")?", {

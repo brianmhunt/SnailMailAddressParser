@@ -65,6 +65,7 @@ if (typeof require !== 'function') {
 
 define(['underscore', 'xregexp'], function (_, xregexp) {
   var XRegExp = xregexp.XRegExp;
+  XRegExp.addUnicodePackage();
 /*  ---- Begin AMD content ---- */
 """
 FOOTER = """

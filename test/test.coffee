@@ -68,7 +68,7 @@ describe "Address strategies ", ->
             assert valid_tests.length > 0
 
           _.each(valid_tests, (test) ->
-            describe "valid test \"#{test}\"", ->
+            describe "valid data \"#{test}\"", ->
               it "matches", ->
                 assert lm.match(test)
           )
@@ -78,7 +78,7 @@ describe "Address strategies ", ->
             assert invalid_tests.length > 0
 
           _.each(invalid_tests, (test) ->
-            describe "invalid test \"#{test}\"", ->
+            describe "invalid data \"#{test}\"", ->
               it "should not match", ->
                 assert not lm.match(test)
           )
@@ -116,7 +116,7 @@ _parsed_object_test = (parsed, expected) ->
         
         assert.equal(parsed[key], value)
 
-    it "the parsed result has no extra keys", () ->
+    it "has no extra keys", () ->
       parsed_only_keys = _.difference(_.keys(parsed), _.keys(expected))
       assert(_.isEmpty(parsed_only_keys),
         "Parsed result contains \"#{parsed_only_keys}\" keys, "+
