@@ -6,10 +6,6 @@
 #
 # TODO: Address verification with eg Geocoder integration
 ###
-{debug, inspect} = require 'util'
-color = require('mocha').reporters.Base.color
-
-
 
 ###
 #   AddressStrategy
@@ -94,8 +90,7 @@ class AddressStrategy
 
   debug_line_strategies: (strategies, addr_lines) ->
     addr_str = _.map(addr_lines, (line, idx) -> "#{idx}: #{line}").join("\n")
-    console.log("\n** Debugging:\n" +
-      "#{color("pending", addr_str)}")
+    console.log("\n** Debugging:\n#{addr_str}")
 
     _.each(strategies, (strat, index) =>
       console.log("-- Strategy #{index} --")

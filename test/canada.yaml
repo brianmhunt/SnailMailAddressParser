@@ -23,7 +23,7 @@ addresses:
 - given: |
     Mr. Incognito
     100 Bay Street
-    Toronto, ON M5H 1T1
+    Toronto ,ON , M5H 1T1
   expect:
     municipality: Toronto
     province: ON
