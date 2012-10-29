@@ -175,7 +175,7 @@ CanadaStrategy = (function(_super) {
 
   POSTAL = "(?<postal> \s*\\w\\d\\w\\s*\\d\\w\\d)";
 
-  MUNICIPALITY_WITH_POSTAL = "" + MUNICIPALITY + " \\s* ,? \s* " + POSTAL;
+  MUNICIPALITY_WITH_POSTAL = "" + MUNICIPALITY + " \\s* ,? \\s* " + POSTAL;
 
   /*
     # Parse an address into components
