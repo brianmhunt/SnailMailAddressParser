@@ -28,15 +28,6 @@ define(['underscore', 'xregexp'], function (_, xregexp) {
 # TODO: Address verification with eg Geocoder integration
 */
 
-var ALL_COUNTRY_IDS, AddressStrategy, COUNTRY_NAMES_MAP, CanadaStrategy, SnailMailAddressParser, color, debug, inspect, iso3166, _ref,
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-_ref = require('util'), debug = _ref.debug, inspect = _ref.inspect;
-
-color = require('mocha').reporters.Base.color;
-
 /*
 #   AddressStrategy
 #   ---------------
@@ -49,6 +40,10 @@ color = require('mocha').reporters.Base.color;
 # A given `subclass` should, after its definition, call subclass.register()
 */
 
+var ALL_COUNTRY_IDS, AddressStrategy, COUNTRY_NAMES_MAP, CanadaStrategy, SnailMailAddressParser, iso3166,
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 AddressStrategy = (function() {
 
@@ -121,7 +116,7 @@ AddressStrategy = (function() {
     addr_str = _.map(addr_lines, function(line, idx) {
       return "" + idx + ": " + line;
     }).join("\n");
-    console.log("\n** Debugging:\n" + ("" + (color("pending", addr_str))));
+    console.log("\n** Debugging:\n" + addr_str);
     return _.each(strategies, function(strat, index) {
       var results;
       console.log("-- Strategy " + index + " --");
@@ -138,8 +133,8 @@ AddressStrategy = (function() {
 })();
 
 AddressStrategy.do_parse_address = function(country, lines, address_string) {
-  var strategy, _ref1;
-  if (_ref1 = !country, __indexOf.call(AddressStrategy._registered_strategies, _ref1) >= 0) {
+  var strategy, _ref;
+  if (_ref = !country, __indexOf.call(AddressStrategy._registered_strategies, _ref) >= 0) {
     throw new Error("No strategy to parse an address for " + country);
   }
   strategy = AddressStrategy._registered_strategies[country];
