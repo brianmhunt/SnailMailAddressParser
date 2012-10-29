@@ -19,7 +19,8 @@ if (typeof require !== 'function') {
 define(['underscore', 'xregexp'], function (_, xregexp) {
   var XRegExp = xregexp.XRegExp, VERSION;
   XRegExp.addUnicodePackage();
-/*  ---- Begin AMD content ---- */VERSION = "0.1.8-alpha";
+/*  ---- Begin AMD content ---- */
+VERSION = "0.1.8-alpha";
 // -- from: lib/iso3166.coffee -- \\
 /*
  * ISO 3166 country codes

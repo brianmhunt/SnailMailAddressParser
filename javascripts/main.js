@@ -16,4 +16,6 @@ $(function () {
     }, 250));
 
     $in.keyup();
+
+    $("#version").text(smap.Version);
 });
