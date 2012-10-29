@@ -35,15 +35,14 @@ _parsed_object_test = (parsed, expected) ->
     _.each expected, (value, key) ->
       value = value or ''
 
-      it "has #{color("pending", key)} of \"#{value}\"", ->
+      it "has #{color("pending", key)} of \"#{value}\"", () ->
         if not _.has(parsed, key)
           assert.fail("the parsed result does not have #{key}")
           return
         
         assert.equal(parsed[key], value)
-        # "#{color("pending", key)} is #{parsed[key]}")
 
-    it "the parsed result has no extra keys", ->
+    it "the parsed result has no extra keys", () ->
       parsed_only_keys = _.difference(_.keys(parsed), _.keys(expected))
       assert(_.isEmpty(parsed_only_keys),
         "Parsed result contains \"#{parsed_only_keys}\" keys, "+
@@ -77,12 +76,10 @@ fs.readdirSync(__dirname).forEach((pathname) ->
 test_set = []
 # convert each file into a test set item
 test_files.forEach (test_file) ->
-  fs.readFile test_file, "utf8", (err, data) ->
-    if (err)
-      error "Exception reading the file #{test_file}"
-      return
+  data = fs.readFileSync test_file, "utf8"
 
-    yaml.loadAll data, (test_set) ->
-      address_tester(test_set)
+  yaml.loadAll data, (test_set) ->
+    address_tester(test_set)
 
-console.log "Completed tests."
+log "Tests loaded."
+
