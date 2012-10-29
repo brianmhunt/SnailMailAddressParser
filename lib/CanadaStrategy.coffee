@@ -29,29 +29,72 @@ class CanadaStrategy extends AddressStrategy
     "Yukon", "YT",
   ]
 
-  ADDRESSEE = "(?<addressee> [\\w\\s-\\.]+)"
+  ADDRESSEE = new LineMatcher("Addressee", "(?<addressee> [A-Za-z\\s-\\.]+)",
+    valid_tests: [
+      "Mary Swanson",
+    ],
+    invalid_tests: [
+      "100 Sampsonite Drive"
+    ]
+  )
 
-  STREET = "(?:(?<suite> [^-]+) \\s* - \\s*)?
+  STREET = new LineMatcher("Street", "(?:(?<suite> [^-]+) \\s* - \\s*)?
     (?<street_number> \\d+)? \\s+
-    (?<street_name> .*?) \\s*"
+    (?<street_name> .*?)",
+    valid_tests: [
+      "100 huntley street",
+      "Unit 215 - 100 Huntley Street"
+    ],
+    invalid_tests: [
+      "Wallaby Lane"
+    ]
+  )
 
-  STREET2 = "(.*)"
+  STREET2 = new LineMatcher("Second street line", "(.+)",
+    valid_tests: [
+      "Anything"
+    ], invalid_tests: [
+      ""
+    ])
 
-  MUNICIPALITY ="
-    (?<municipality> \\w[\\w\\s\.]+?) \\s* ,? \\s*
-    (?<province> #{provinces_list.join("|")}) \\s*"
+  MUNICIPALITY = new LineMatcher("Municipality and Province",
+    "(?<municipality> \\w[\\w\\s\\.]+?) \\s* ,? \\s*
+     (?<province> #{provinces_list.join("|")})",
+     valid_tests: [
+        "St. Petersberg, ON",
+        "Hudsonville, QC",
+     ],
+     invalid_tests: [
+        "St. Peteresberg, Peterborough, 10005"
+     ]
+  )
 
-  POSTAL = "(?<postal> \s*\\w\\d\\w\\s*\\d\\w\\d)"
+  POSTAL = new LineMatcher("Postal code",
+    "(?<postal> \s*\\w\\d\\w\\s*\\d\\w\\d)",
+    valid_tests: [
+      "H0H0H0",
+      "H0H  0H0",
+    ],
+    invalid_tests: [
+      "HoH 0H0"
+    ]
+  )
 
-  MUNICIPALITY_WITH_POSTAL = "#{MUNICIPALITY} \\s* ,? \\s* #{POSTAL}"
+  MUNICIPALITY_WITH_POSTAL = new LineMatcher(
+    "Municipality, province and postal code",
+    "#{MUNICIPALITY.expression} (?: \\s* ,? \\s* #{POSTAL.expression})?",
+    valid_tests: [
+      "One, QC, M5R 1V2",
+      "Two Tee, ON"
+    ], invalid_tests: [
+      "Two, Two, Two"
+    ]
+  
+  )
 
-
-  ###
-  # Parse an address into components
-  ###
-  parse_address: (lines, address_string) ->
-    # here are the components of the Canadian address
-    fields =
+  # Return an object with the fields we expect (and defaults)
+  expected_fields: ->
+    return {
       suite: ''
       addressee: ''
       street_number: ''
@@ -60,10 +103,12 @@ class CanadaStrategy extends AddressStrategy
       province: ''
       postal: ''
       country: 'Canada'
+    }
 
-    if lines.length < 2
-      throw new Error("Canadian addresses must be at least two lines.")
-
+  #
+  # Return a list of line strategies that this country strategy employs
+  #
+  line_strategies: ->
     line_strats = []
     line_strats.push([ADDRESSEE, STREET, STREET2, MUNICIPALITY, POSTAL])
     line_strats.push([ADDRESSEE, STREET,          MUNICIPALITY, POSTAL])
@@ -73,14 +118,7 @@ class CanadaStrategy extends AddressStrategy
     line_strats.push([ADDRESSEE, STREET,          MUNICIPALITY_WITH_POSTAL])
     line_strats.push([           STREET, STREET2, MUNICIPALITY_WITH_POSTAL])
     line_strats.push([           STREET,          MUNICIPALITY_WITH_POSTAL])
-
-    results = @run_line_strategies(line_strats, lines) or {}
-
-    # TODO: check if we are in debug mode, and only dump this info when we are
-    if _.isEmpty(results)
-      @debug_line_strategies(line_strats, lines)
-    
-    return _.defaults(results, fields)
+    return line_strats
 
 new CanadaStrategy().register()
 

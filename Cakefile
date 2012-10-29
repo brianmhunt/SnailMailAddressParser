@@ -19,8 +19,25 @@
 
 {spawn} = require 'child_process'
 {log} = require 'util'
+fs = require 'fs'
+glob = require 'glob'
+_ = require 'underscore'
+coffee = require 'coffee-script'
 
-TARGET='build/snailmailaddressparser'
+MOCHA_CMD = './node_modules/mocha/bin/mocha'
+UGLIFY_CMD = './node_modules/uglify-js2/bin/uglifyjs2'
+
+SRC_DIR='lib'
+
+# these are manually ordered dependencies
+COFFEE_SRC = [
+  'iso3166.coffee',
+  'LineMatcher.coffee',
+  'AddressStrategy.coffee',
+  '*',
+]
+
+DEST='build/snailmailaddressparser'
 
 # The following uses `amdefine` for AMD support on Node.js
 # It should also work with RequireJS.
@@ -57,33 +74,44 @@ FOOTER = """
 """
 
 task 'test', 'Run tests in Mocha (via "npm test")', (options) ->
-  log "Cake is running: npm test"
   args = ["--compilers", "coffee:coffee-script", "-R", "spec"]
-  spawn "mocha", args, customFds: [0, 1, 2]
+  log "Cake is running: #{MOCHA_CMD} #{args.join(" ")}"
+  spawn MOCHA_CMD, args, customFds: [0, 1, 2]
 
 task 'toast', "Build the project into the build/ dir", (options) ->
-  Toaster = require("coffee-toaster").Toaster
+  # although I stopped using coffee-toaster (because it wouldn't track
+  # dependencies), its builder.coffee was a helpful guide to how to perform the
+  # following. An alternative to the following would be figuring out Grunt.
+  source_dir = require('path').join(__dirname, SRC_DIR)
 
-  toast_options =
-    c: true
-    d: false
-    config:
-      bare: true
-      minify: false
-      packaging: false
-      folders:
-        'lib/': 'SnailMailAddressParser'
-      release: TARGET + ".js"
-    
-  log "Cake is toasting: #{toast_options.config.release}"
-  toasting = new Toaster __dirname, toast_options
-  toasting.build LEADER, FOOTER
+  sources = []
 
-  # build minified (.min.js)
-  toast_options.config.minify = true
-  toast_options.config.release = TARGET + ".min.js"
+  # Get all source files. Preserve the order in COFFEE_SRC
+  _.each(COFFEE_SRC, (src) ->
+    _.each(glob.sync(src, cwd: source_dir), (filename) ->
+      if filename not in sources
+        sources.push(filename)
+    )
+  )
 
-  log "Cake is toasting: #{toast_options.config.release}"
-  toasting = new Toaster __dirname, toast_options
-  toasting.build LEADER, FOOTER
+  # get the source as a string
+  source = _.map(sources, (src_file) ->
+    src_file = require('path').join(SRC_DIR, src_file)
+    console.log "Compiling #{src_file}."
+    js = coffee.compile fs.readFileSync(src_file, 'utf8'), {bare: true}
+    return "\n// -- from: #{src_file} -- \\\\\n" + js
+  ).join("\n")
+
+  contents = LEADER + source + FOOTER
+
+  console.log "Writing #{DEST}.js"
+  fs.writeFileSync("#{DEST}.js", contents, 'utf8')
+
+  # minify the content
+  console.log "Creating minified #{DEST}.min.js"
+  args = ["#{DEST}.js", '-o', "#{DEST}.min.js", '-m', '--lint']
+  spawn UGLIFY_CMD, args, customFds: [0, 1, 2]
+
+
+
 

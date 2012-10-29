@@ -8,7 +8,6 @@ assert = chai.assert; expect = chai.expect; should = chai.should()
 color = require('mocha').reporters.Base.color
 smap = require("../build/snailmailaddressparser")
 
-
 # Ensure the type of import is what we expect
 describe "SnailMailAddressParser", ->
   it("should be an object with a parse function", ->
@@ -17,6 +16,81 @@ describe "SnailMailAddressParser", ->
     expect(smap.parse).to.be.a('function')
   )
 
+#
+#   Strategy Unit Tests
+#   -------------------
+#
+strategies = smap.AddressStrategy.all_strategies()
+
+describe "Address strategies ", ->
+
+  ###
+  # Test the strategy for constituents of the correct type
+  ###
+  _.each(strategies, (strategy_instance) ->
+
+    describe "for #{strategy_instance.name}", ->
+      ls_foo = strategy_instance.line_strategies
+
+      # not all country strategies will have a line strategy; however, at the
+      # moment they do
+      it "has a line_strategies function", ->
+        assert _.isFunction(ls_foo)
+
+      strats = ls_foo()
+
+      it "has an array of strategies", ->
+        assert _.isArray(strats)
+
+      _.each(strats, (strat, index) ->
+        describe "Strategy ##{index}", ->
+          it "is an array of ListMatcher instances", ->
+            assert _.all(strat, (lm) ->
+              # while we are here, add the class to line_matchers
+              return lm.isLineMatcherClass
+            )
+      )
+      # a list of unique line matchers for this strategy
+      line_matchers = {}
+      _.each(strats, (strat) ->
+        _.each strat, (lm) -> line_matchers[lm.name] = lm
+      )
+
+      #
+      # Test the line matchers against their internal matches
+      #
+      _.each(line_matchers, (lm, name) ->
+        valid_tests = lm.options.valid_tests
+        invalid_tests = lm.options.invalid_tests
+        describe "line matcher #{lm.name}", ->
+          it "has an array of valid tests", ->
+            assert _.isArray(valid_tests)
+            assert valid_tests.length > 0
+
+          _.each(valid_tests, (test) ->
+            describe "valid test \"#{test}\"", ->
+              it "matches", ->
+                assert lm.match(test)
+          )
+
+          it "has an array of invalid tests", ->
+            assert _.isArray(invalid_tests)
+            assert invalid_tests.length > 0
+
+          _.each(invalid_tests, (test) ->
+            describe "invalid test \"#{test}\"", ->
+              it "should not match", ->
+                assert not lm.match(test)
+          )
+      )
+  ) # /each strategy
+
+
+
+
+#
+#   YAML TESTS
+#   ----------
 #
 # Testing with .YAML files - map address strings to expected returns
 # Read every .YAML file in the ./test directory

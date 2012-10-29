@@ -273,5 +273,6 @@ _.each(iso3166, (country) ->
   )
 )
 
-COUNTRIES_REX: XRegExp("(#{_.keys(iso3166).join("|")})")
+COUNTRIES_REX = XRegExp("(#{_.keys(iso3166).join("|")})")
+
 

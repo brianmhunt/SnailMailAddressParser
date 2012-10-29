@@ -10,7 +10,6 @@
 ###
 #   AddressStrategy
 #   ---------------
-# << iso3166
 #
 # This class is intended to be subclassed, and expects parse_address to be
 # overloaded. function should take a series of lines and return a simple
@@ -37,6 +36,9 @@ class AddressStrategy
 
     AddressStrategy._registered_strategies[name] = @
 
+  @all_strategies: ->
+    return @_registered_strategies
+
   #
   # Given a set of regular expressions, see if each one applies to the given
   # `lines`, in order, and return the results if it matches - otherwise
@@ -46,31 +48,23 @@ class AddressStrategy
   #         line
   # @ param: a list of lines of the address
   #
-  run_rex_line_strategy: (regexes, addr_lines) ->
+  run_rex_line_strategy: (matcher_array, addr_lines) ->
     result = {}
 
-    if regexes.length != addr_lines.length
-      throw new Error("Parsing strategy expects #{regexes.length} lines, but " +
-        "the address has #{addr_lines.length} lines.")
+    if matcher_array.length != addr_lines.length
+      throw new Error("Matcher expects #{matcher_array.length} lines," +
+        " but the address has #{addr_lines.length} lines.")
 
-    _.each(regexes, (rex, index) ->
-      rex = XRegExp("^#{rex}$", 'x')
-      matches = XRegExp.exec(addr_lines[index], rex)
+    _.each(matcher_array, (line_strategy, index) ->
+      matches = line_strategy.match(addr_lines[index])
 
       if matches == null
-        throw new Error("Line #{index} does not match #{rex}")
+        throw new Error("Line #{index} is not a valid #{line_strategy.name}")
 
-      # Filter out numeric indexes and XRegExp hard-coded 'index' and 'input'
-      # properties
-      EXCLUDED = ['index', 'input']
-      matched_keys = _.keys(matches)
-      matched_keys = _.filter matched_keys,
-        (s) -> isNaN(s) and s not in EXCLUDED
-
-      _.each(matched_keys, (key) ->
-        result[key] = matches[key]
-      )
+      _.extend(result, matches)
+      # _.each matches, (key) -> result[key] = matches[key]
     )
+
     return result
 
   # try every strategy on addr_lines
@@ -93,7 +87,11 @@ class AddressStrategy
     console.log("\n** Debugging:\n#{addr_str}")
 
     _.each(strategies, (strat, index) =>
-      console.log("-- Strategy #{index} --")
+      console.log "Skipping strategy #{index}; mismatched line count"
+      # silently skip strategies that correspond to different line counts
+      if strat.length != addr_lines.length
+        return
+
       try
         results = @run_rex_line_strategy(strat, addr_lines)
       catch err
@@ -103,6 +101,29 @@ class AddressStrategy
         #console.log "Line #{line}: \"#{addr_lines[line]}\" " +
         #  "does not match /^#{rex}$/ (#{err})"
     )
+
+  #
+  # parse_address
+  # ~~~~~~~~~~~~~
+  #
+  # Given lines/address, parse it components.
+  # Address_string is provided as a backup, in case a 'lines' strategy is not
+  # workable.
+  #
+  parse_address: (lines, address_string) ->
+    if lines.length < 2
+      throw new Error("Addresses must be at least two lines.")
+
+    line_strats = @line_strategies() or []
+
+    results = @run_line_strategies(line_strats, lines) or {}
+
+    # TODO: check if we are in debug mode, and only dump this info when we are
+    if _.isEmpty(results)
+      @debug_line_strategies(line_strats, lines)
+    
+    return _.defaults(results, @expected_fields())
+
 
 
 AddressStrategy.do_parse_address = (country, lines, address_string) ->
