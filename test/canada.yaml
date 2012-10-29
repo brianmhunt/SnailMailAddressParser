@@ -38,11 +38,28 @@ addresses:
 - given: |
     Mr. Incognito
     221 - 100 Bay Street
-    Toronto, ON M5H 1T1
+    Toronto, Newfoundland and Labrador M5H 1T1
     Canada
   expect:
     municipality: Toronto
-    province: ON
+    province: Newfoundland and Labrador
+    postal: M5H 1T1
+    country: Canada
+    street_number: 100
+    street_name: Bay Street
+    street_name_2:
+    addressee: Mr. Incognito
+    suite: 221
+
+- given: |
+    Mr. Incognito
+    221 - 100 Bay Street
+    Toronto, British Columbia
+    M5H 1T1
+    Canada
+  expect:
+    municipality: Toronto
+    province: British Columbia
     postal: M5H 1T1
     country: Canada
     street_number: 100

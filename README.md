@@ -78,7 +78,8 @@ To install on the browser you can simply copy `build/snailmailaddressparser.js`
 or `build/snailmailaddressparser.min.js` to your project and include it in your
 project with eg the RequireJS `require('snailmailaddressparser')`.
 
-- [lodash](https://github.com/bestiejs/lodash) (or [underscore](http://underscorejs.org/))
+- [lodash](https://github.com/bestiejs/lodash) 
+  or [underscore](http://underscorejs.org/)
 - [XRegExp](http://xregexp.com/)
 - AMD eg [requirejs](http://requirejs.org/)
 

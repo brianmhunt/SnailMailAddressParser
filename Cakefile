@@ -46,7 +46,7 @@ if (typeof require !== 'function') {
     }
 }
 
-define(['lodash', 'xregexp'], function (_, xregexp) { // begin AMD definition
+define(['underscore', 'xregexp'], function (_, xregexp) {
   var XRegExp = xregexp.XRegExp;
 /*  ---- Begin AMD content ---- */
 """
@@ -58,7 +58,8 @@ FOOTER = """
 
 task 'test', 'Run tests in Mocha (via "npm test")', (options) ->
   log "Cake is running: npm test"
-  spawn "npm", ['test'], customFds: [0, 1, 2]
+  args = ["--compilers", "coffee:coffee-script", "-R", "spec"]
+  spawn "mocha", args, customFds: [0, 1, 2]
 
 task 'toast', "Build the project into the build/ dir", (options) ->
   Toaster = require("coffee-toaster").Toaster

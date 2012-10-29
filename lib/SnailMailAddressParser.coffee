@@ -23,7 +23,8 @@ class SnailMailAddressParser
     # split the address into usable lines
     # - skip any empty space
     # - trim whitespace from lines
-    lines = _.filter(_.map(str.split('\n'), (aline) -> aline.trim()))
+    lines = _.filter(_.map(str.split('\n'), (aline) -> aline.trim()),
+      _.identity)
 
     if lines.length < 2
       throw new Error("Addresses must be at least two lines long")

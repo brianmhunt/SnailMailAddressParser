@@ -1,7 +1,7 @@
 #
 # Test the basic functionality
 #
-_ = require('lodash'); chai = require('chai')
+_ = require('underscore'); chai = require('chai')
 {log, error} = require('util'); fs = require('fs'); path = require('path')
 yaml = require('js-yaml')
 assert = chai.assert; expect = chai.expect; should = chai.should()
@@ -57,7 +57,13 @@ address_tester = (test_set) ->
       given_str = color("pending", JSON.stringify(addr.given)) # escape newlines
 
       describe given_str, ->
-        parsed = smap.parse(addr.given, country)
+        try
+          parsed = smap.parse(addr.given, country)
+        catch err
+          assert false, "\nWhile parsing address: " +
+            "\n#{color("pending", addr.given)}" +
+            "encountered #{color("error message", err)}."
+          return
         _parsed_object_test(parsed, addr.expect)
   return # address_tester
 
