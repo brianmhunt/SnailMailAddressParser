@@ -4,17 +4,23 @@ SnailMailAddressParser
 [![Build Status](https://travis-ci.org/brianmhunt/SnailMailAddressParser.png)](https://travis-ci.org/brianmhunt/SnailMailAddressParser)
 
 
-A Javascript library for parsing valid address strings into their constituent elements.
+A Javascript library for parsing valid address strings into their constituent
+elements.
 
-It is hosted on GitHub at
+SnailMailAddressParse has a page for testing over at:
 [brianmhunt/SnailMailAddressParser](http://brianmhunt.github.com/SnailMailAddressParser/).
 
 Purpose
 -------
 
-This project exists to crowdsource the difficult problem of parsing addresses. It is intended to assist with the verification that addresses are properly formatted, and where they are properly formatted to parse and return their respective constituents.
+This project exists to crowdsource the difficult problem of parsing addresses.
+It is intended to assist with the verification that addresses are properly
+formatted, and where they are properly formatted to parse and return their
+respective constituents.
 
-At the moment this project does not aim to verify that an address is consistent with reality. For example, this library shall not verify that a given address in California has a local zip-code.
+At the moment this project does not aim to verify that an address is consistent
+with reality. For example, this library shall not verify that a given address
+in California has a Californian zip-code.
 
 Usage
 -----
@@ -39,9 +45,7 @@ API
 
 ### `smap = require('snailmailaddressparser')`
 
-Return an instance of the Address Parser. Uses the
-[amdefine](https://github.com/jrburke/amdefine) module for Node.js
-compatibility.
+Return an instance of the Address Parser.
 
 ### `smap.parse(address_string, defaultCountry)`
 
@@ -69,7 +73,7 @@ parsing addresses, which strategy may be broken down into a variety of
 sub-strategies. In this way, I hope edge cases can eventually be shored up.
 
 The built-in tests allow for easy verification that addresses return the
-expected fields. See for example `test/canada.coffee`.
+expected fields, and the tests are in easilly accessible .yaml files.
 
 Browser Installation
 --------------------
@@ -81,18 +85,20 @@ project with eg the RequireJS `require('snailmailaddressparser')`.
 - [lodash](https://github.com/bestiejs/lodash) 
   or [underscore](http://underscorejs.org/)
 - [XRegExp](http://xregexp.com/)
-- AMD eg [requirejs](http://requirejs.org/)
+- AMD eg [requirejs](http://requirejs.org/) and `require('snailmailaddressparser')`
+  or `<script src='snailmailaddressparser.js'></script>` tag
 
 Requirements for testing
 ------------------------
 
-With [Homebrew](http://mxcl.github.com/homebrew/)
-
 - Node.js: `brew install node`
+  With [Homebrew](http://mxcl.github.com/homebrew/)
+
 - Coffee-script `npm install -g coffee-script`
 
-Once 'npm' and coffee-script installed, you can run `cake deps` to install the
-remaining npm packages.
+Install with `npm install snailmailaddressparser`. To run the build one will
+need `cake`, which is part of Coffee-script. One can install Coffee-script
+with `npm-install -g coffee-script`.
 
 Cakefile targets
 ----------------
@@ -107,9 +113,7 @@ modules `build/snailmailaddressparser.js` and
 
 Run [Mocha](http://visionmedia.github.com/mocha/)-based tests on the project.
 
-#### `cake deps`
-
-Install dependencies in the `node_modules` subdirectory of the project.
+Fun tip: You can combine targets e.g. run `cake toast test` to build then test.
 
 Future
 ------
@@ -127,3 +131,4 @@ License
 
 This project is licensed under the MIT license, which is included as LICENSE in
 the source.
+
