@@ -20,7 +20,7 @@ define(['underscore', 'xregexp'], function (_, xregexp) {
   var XRegExp = xregexp.XRegExp, VERSION;
   XRegExp.addUnicodePackage();
 /*  ---- Begin AMD content ---- */
-VERSION = "0.1.8-alpha";
+VERSION = "0.1.9-alpha";
 // -- from: lib/Debug.coffee -- \\
 /*
 #
@@ -1201,6 +1201,9 @@ SnailMailAddressParser = (function() {
   function SnailMailAddressParser() {}
 
   SnailMailAddressParser.prototype.parse = function(str, options) {
+    if (options == null) {
+      options = {};
+    }
     if (!_.isString(str)) {
       throw new Error("Address must be a string, got " + (typeof str) + ".");
     }

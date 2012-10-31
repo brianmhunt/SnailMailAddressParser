@@ -18,7 +18,7 @@ class SnailMailAddressParser
 
   constructor: () ->
 
-  parse: (str, options) ->
+  parse: (str, options={}) ->
     if not _.isString(str)
       throw new Error("Address must be a string, got #{typeof str}.")
 
