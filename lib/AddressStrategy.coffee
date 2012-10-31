@@ -1,19 +1,23 @@
 ###
 # This is the base class for all strategies
 #
-# TODO: Someday, think about how to get postal verification from the Universal
-# Postal Union
+# TODO: get postal verification from the Universal Postal Union
 #
 # TODO: Address verification with eg Geocoder integration
+#
+# TODO: Make the Perl gods happy by outputting a big, evil regular expression
+#
+# TODO: Return an object that has multiple ambiguous addresses (i.e. matches
+# multiple destinations)
 ###
 
 ###
 #   AddressStrategy
 #   ---------------
 #
-# This class is intended to be subclassed, and expects parse_address to be
-# overloaded. function should take a series of lines and return a simple
-# JSONable object that adequately describes the components of the address.
+# This class is intended to be subclassed.  The `do_parse_address` function
+# should take a series of lines and return a simple JSONable object that
+# adequately describes the components of the address.
 #
 # A given `subclass` should, after its definition, call subclass.register()
 ###
@@ -124,14 +128,51 @@ class AddressStrategy
     
     return _.defaults(results, @expected_fields())
 
+AddressStrategy.do_parse_address = (addr_string, options) ->
+  options = _.defaults(options,
+    defaultCountry: ''
+    debug: false
+  )
 
+  strategies = []
+  matches = []
 
-AddressStrategy.do_parse_address = (country, lines, address_string) ->
-  if not country in AddressStrategy._registered_strategies
-    throw new Error("No strategy to parse an address for #{country}")
+  # split the address into usable lines
+  # - skip any empty space
+  # - trim whitespace from lines
+  lines = _.filter(_.map(
+    addr_string.split('\n'), (aline) -> aline.trim()), _.identity
+  )
 
-  # console.log "Parsing address in #{country}."
-  strategy = AddressStrategy._registered_strategies[country]
-  return strategy.parse_address(lines, address_string)
+  if lines.length < 2
+    # this may be a Western convention.
+    throw new Error("Addresses must be at least two lines long")
 
+  # First, we need to get the country. It should be the last line of the
+  # address, but if the last line is not a recognized country then we use
+  # the defaultCountry passed as an argument or alternatively the
+  # defaultCountry passed as an argument to the constructor of this class.
+  last_line = lines[lines.length - 1]
+  if last_line.toLowerCase() in _.keys(COUNTRY_NAMES_MAP)
+    # we've been given a country.
+    country = lines.pop().toLowerCase()
+  else if options.defaultCountry
+    # use the default argument to this function
+    country = options.defaultCountry
+
+  if country
+    # convert from eg 'Canada' to 'canada' or "CA" to 'ca'
+    country_key = COUNTRY_NAMES_MAP[country.toLowerCase()]
+
+    if country_key in _.keys(AddressStrategy._registered_strategies)
+      strategies = [AddressStrategy._registered_strategies[country_key]]
+
+  if _.isEmpty(strategies)
+    # O_RLY? Try every country.
+    strategies = _.values(AddressStrategy._registered_strategies)
+
+  for strat in strategies
+    matches.push(strat.parse_address(lines, addr_string, options.debug))
+
+  return { matches: _.flatten(matches) }
 

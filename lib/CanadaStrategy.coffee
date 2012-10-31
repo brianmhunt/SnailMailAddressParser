@@ -110,16 +110,14 @@ class CanadaStrategy extends AddressStrategy
   # Return a list of line strategies that this country strategy employs
   #
   line_strategies: ->
-    line_strats = []
-    line_strats.push([ADDRESSEE, STREET, STREET2, MUNICIPALITY, POSTAL])
-    line_strats.push([ADDRESSEE, STREET,          MUNICIPALITY, POSTAL])
-    line_strats.push([           STREET, STREET2, MUNICIPALITY, POSTAL])
-    line_strats.push([           STREET,          MUNICIPALITY, POSTAL])
-    line_strats.push([ADDRESSEE, STREET, STREET2, MUNICIPALITY_WITH_POSTAL])
-    line_strats.push([ADDRESSEE, STREET,          MUNICIPALITY_WITH_POSTAL])
-    line_strats.push([           STREET, STREET2, MUNICIPALITY_WITH_POSTAL])
-    line_strats.push([           STREET,          MUNICIPALITY_WITH_POSTAL])
-    return line_strats
+    lms = new LineMatcherStrategy()
+    lms.add(ADDRESSEE.optional(),
+            STREET, STREET2.optional(),
+            MUNICIPALITY, POSTAL)
+    lms.add(ADDRESSEE.optional(),
+            STREET, STREET2.optional(),
+            MUNICIPALITY_WITH_POSTAL)
+    return lms.all()
 
 new CanadaStrategy().register()
 

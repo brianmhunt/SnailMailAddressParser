@@ -2,8 +2,8 @@
 # Test the basic functionality
 #
 _ = require('underscore'); chai = require('chai')
-{log, error} = require('util'); fs = require('fs'); path = require('path')
-yaml = require('js-yaml')
+{log, error, inspect} = require('util'); fs = require('fs')
+path = require('path'); yaml = require('js-yaml')
 assert = chai.assert; expect = chai.expect; should = chai.should()
 color = require('mocha').reporters.Base.color
 smap = require("../build/snailmailaddressparser")
@@ -18,7 +18,25 @@ describe "SnailMailAddressParser", ->
   it "should have a semver compatible version (#{smap.Version})", ->
     assert require('semver').valid(smap.Version)
 
+describe "LineMatcherStrategy", ->
+  it "should combine all permutations", ->
+    LM = smap.LineMatcher
+    LMS = smap.LineMatcherStrategy
 
+    lm1 = new LM("LM 1", "1")
+    lm2 = new LM("LM 2", "2")
+    lm3 = new LM("LM 3", "3", is_optional: true)
+    lm4 = new LM("LM 4", "4").optional()
+
+    lms = new LMS()
+    lms.add(lm1, lm2, lm3, lm4)
+
+    assert _.isEqual(lms.all(), [
+      [lm1, lm2, lm3, lm4],
+      [lm1, lm2,      lm4],
+      [lm1, lm2, lm3     ],
+      [lm1, lm2          ],
+    ])
 
 #
 #   Strategy Unit Tests
@@ -27,7 +45,6 @@ describe "SnailMailAddressParser", ->
 strategies = smap.AddressStrategy.all_strategies()
 
 describe "Address strategies ", ->
-
   ###
   # Test the strategy for constituents of the correct type
   ###
@@ -101,29 +118,43 @@ describe "Address strategies ", ->
 # Note that each .YAML can be divided into multiple test sets (with "---")
 #
 # Run each test set through the address_tester function
-
 _parsed_object_test = (parsed, expected) ->
   expect_str = color("pending", JSON.stringify(expected, null, 2))
   parsed_str = color("error message", JSON.stringify(parsed, null, 2))
 
   describe "when parsed by SnailMailAddressParser", ->
-    it "becomes an object", ->
+    it "becomes an object with a 'matches' property", ->
       assert.isObject(parsed)
+      assert _.has(parsed, 'matches')
+
+    matches = parsed.matches
+    
+    if _.isObject expected
+      it "has only one match", ->
+        assert parsed.matches.length == 1
+    else if _.isArray expected
+      # TODO List of matches
+      log("***WARNING***: " +
+      "Tests for multiple expected results is not yet implemented")
+    else
+      log "Expected was not a valid type (object or array)."
+
+    match = parsed.matches[0]
 
     _.each expected, (value, key) ->
       value = value or ''
 
       it "has #{color("pending", key)} of \"#{value}\"", () ->
-        if not _.has(parsed, key)
-          assert.fail("the parsed result does not have #{key}")
+        if not _.has(match, key)
+          assert.fail("the parsed matches do not have #{key}")
           return
         
-        assert.equal(parsed[key], value)
+        assert.equal(match[key], value)
 
     it "has no extra keys", () ->
-      parsed_only_keys = _.difference(_.keys(parsed), _.keys(expected))
+      parsed_only_keys = _.difference(_.keys(match), _.keys(expected))
       assert(_.isEmpty(parsed_only_keys),
-        "Parsed result contains \"#{parsed_only_keys}\" keys, "+
+        "Parsed matches contains \"#{parsed_only_keys}\" keys, "+
         "but 'twas not expected.")
 
   return # _parsed_object_test
@@ -136,7 +167,7 @@ address_tester = (test_set) ->
 
       describe given_str, ->
         try
-          parsed = smap.parse(addr.given, country)
+          parsed = smap.parse(addr.given, defaultCountry: country)
         catch err
           assert false, "\nWhile parsing address: " +
             "\n#{color("pending", addr.given)}" +

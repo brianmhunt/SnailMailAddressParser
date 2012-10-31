@@ -31,7 +31,9 @@ SRC_DIR='lib'
 
 # these are manually ordered dependencies
 COFFEE_SRC = [
+  'Debug.coffee',
   'iso3166.coffee',
+  'LineMatcherStrategy.coffee',
   'LineMatcher.coffee',
   'AddressStrategy.coffee',
   '*',
@@ -74,8 +76,11 @@ FOOTER = """
 });
 """
 
+option '-g', '--grep [GREP]', 'pass "-g TEST" to Mocha'
 task 'test', 'Run tests in Mocha (via "npm test")', (options) ->
   args = ["--compilers", "coffee:coffee-script", "-R", "spec"]
+  if options.grep
+    args = args.concat(['-g'], options.grep)
   log "Cake is running: #{MOCHA_CMD} #{args.join(" ")}"
   spawn MOCHA_CMD, args, customFds: [0, 1, 2]
 

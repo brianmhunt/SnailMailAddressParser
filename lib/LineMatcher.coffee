@@ -15,13 +15,28 @@
 class LineMatcher
   constructor: (@name, @expression, options={}) ->
     @options = _.defaults(options,
+      invalid_tests: []
+      is_optional: false
       rex_flags: 'xi'
       valid_tests: []
-      invalid_tests: []
     )
 
     @rex = XRegExp("^#{expression}$", @options.rex_flags)
 
+  # if the default is !is_optional, or unknown, one can use the optional() call
+  # to get a copy of a LineMatcher that is optional (or mandatory, below)
+  optional: () ->
+    copy = _.clone(@)
+    copy.options.is_optional = true
+    return copy
+
+  mandatory: () ->
+    copy = _.clone(@)
+    copy.options.is_optional = false
+    return copy
+
+  is_optional: () -> @options.is_optional
+    
   # match
   # ~~~~~
   # Return an object mapping matched items if the line matches, null otherwise

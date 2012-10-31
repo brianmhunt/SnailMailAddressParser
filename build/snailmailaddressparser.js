@@ -21,6 +21,38 @@ define(['underscore', 'xregexp'], function (_, xregexp) {
   XRegExp.addUnicodePackage();
 /*  ---- Begin AMD content ---- */
 VERSION = "0.1.8-alpha";
+// -- from: lib/Debug.coffee -- \\
+/*
+#
+# Some debugging utilities
+#
+*/
+
+var inspect, log;
+
+if (typeof module !== 'undefined' && module.exports) {
+  inspect = function(o, showHidden, depth) {
+    if (showHidden == null) {
+      showHidden = false;
+    }
+    if (depth == null) {
+      depth = 2;
+    }
+    return require('util').inspect(o, showHidden, depth, true);
+  };
+  log = function(string) {
+    return require('util').debug(string);
+  };
+} else {
+  inspect = function(o) {
+    return console.log(o);
+  };
+  log = function(o) {
+    return console.log(o);
+  };
+}
+
+
 // -- from: lib/iso3166.coffee -- \\
 /*
  * ISO 3166 country codes
@@ -799,6 +831,46 @@ _.each(iso3166, function(country) {
 COUNTRIES_REX = XRegExp("(" + (_.keys(iso3166).join("|")) + ")");
 
 
+// -- from: lib/LineMatcherStrategy.coffee -- \\
+var LineMatcherStrategy,
+  __slice = [].slice;
+
+LineMatcherStrategy = (function() {
+
+  function LineMatcherStrategy() {
+    this._list = [];
+  }
+
+  LineMatcherStrategy.prototype.add = function() {
+    var line_matcher_list, permutations;
+    line_matcher_list = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    permutations = [_.toArray(line_matcher_list)];
+    _.each(line_matcher_list, function(lm, index) {
+      var perms_wo_lm;
+      if (!lm.is_optional()) {
+        return;
+      }
+      perms_wo_lm = [];
+      _.each(permutations, function(perm) {
+        var matcher_set;
+        matcher_set = _.clone(perm);
+        matcher_set.splice(matcher_set.indexOf(lm), 1);
+        return perms_wo_lm.push(matcher_set);
+      });
+      return permutations = permutations.concat(perms_wo_lm);
+    });
+    return this._list = this._list.concat(permutations);
+  };
+
+  LineMatcherStrategy.prototype.all = function() {
+    return this._list;
+  };
+
+  return LineMatcherStrategy;
+
+})();
+
+
 // -- from: lib/LineMatcher.coffee -- \\
 var LineMatcher,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
@@ -812,12 +884,31 @@ LineMatcher = (function() {
       options = {};
     }
     this.options = _.defaults(options, {
+      invalid_tests: [],
+      is_optional: false,
       rex_flags: 'xi',
-      valid_tests: [],
-      invalid_tests: []
+      valid_tests: []
     });
     this.rex = XRegExp("^" + expression + "$", this.options.rex_flags);
   }
+
+  LineMatcher.prototype.optional = function() {
+    var copy;
+    copy = _.clone(this);
+    copy.options.is_optional = true;
+    return copy;
+  };
+
+  LineMatcher.prototype.mandatory = function() {
+    var copy;
+    copy = _.clone(this);
+    copy.options.is_optional = false;
+    return copy;
+  };
+
+  LineMatcher.prototype.is_optional = function() {
+    return this.options.is_optional;
+  };
 
   LineMatcher.prototype.match = function(line) {
     var EXCLUDED, matched_properties, matches;
@@ -846,19 +937,23 @@ LineMatcher = (function() {
 /*
 # This is the base class for all strategies
 #
-# TODO: Someday, think about how to get postal verification from the Universal
-# Postal Union
+# TODO: get postal verification from the Universal Postal Union
 #
 # TODO: Address verification with eg Geocoder integration
+#
+# TODO: Make the Perl gods happy by outputting a big, evil regular expression
+#
+# TODO: Return an object that has multiple ambiguous addresses (i.e. matches
+# multiple destinations)
 */
 
 /*
 #   AddressStrategy
 #   ---------------
 #
-# This class is intended to be subclassed, and expects parse_address to be
-# overloaded. function should take a series of lines and return a simple
-# JSONable object that adequately describes the components of the address.
+# This class is intended to be subclassed.  The `do_parse_address` function
+# should take a series of lines and return a simple JSONable object that
+# adequately describes the components of the address.
 #
 # A given `subclass` should, after its definition, call subclass.register()
 */
@@ -965,13 +1060,42 @@ AddressStrategy = (function() {
 
 })();
 
-AddressStrategy.do_parse_address = function(country, lines, address_string) {
-  var strategy, _ref;
-  if (_ref = !country, __indexOf.call(AddressStrategy._registered_strategies, _ref) >= 0) {
-    throw new Error("No strategy to parse an address for " + country);
+AddressStrategy.do_parse_address = function(addr_string, options) {
+  var country, country_key, last_line, lines, matches, strat, strategies, _i, _len, _ref;
+  options = _.defaults(options, {
+    defaultCountry: '',
+    debug: false
+  });
+  strategies = [];
+  matches = [];
+  lines = _.filter(_.map(addr_string.split('\n'), function(aline) {
+    return aline.trim();
+  }), _.identity);
+  if (lines.length < 2) {
+    throw new Error("Addresses must be at least two lines long");
   }
-  strategy = AddressStrategy._registered_strategies[country];
-  return strategy.parse_address(lines, address_string);
+  last_line = lines[lines.length - 1];
+  if (_ref = last_line.toLowerCase(), __indexOf.call(_.keys(COUNTRY_NAMES_MAP), _ref) >= 0) {
+    country = lines.pop().toLowerCase();
+  } else if (options.defaultCountry) {
+    country = options.defaultCountry;
+  }
+  if (country) {
+    country_key = COUNTRY_NAMES_MAP[country.toLowerCase()];
+    if (__indexOf.call(_.keys(AddressStrategy._registered_strategies), country_key) >= 0) {
+      strategies = [AddressStrategy._registered_strategies[country_key]];
+    }
+  }
+  if (_.isEmpty(strategies)) {
+    strategies = _.values(AddressStrategy._registered_strategies);
+  }
+  for (_i = 0, _len = strategies.length; _i < _len; _i++) {
+    strat = strategies[_i];
+    matches.push(strat.parse_address(lines, addr_string, options.debug));
+  }
+  return {
+    matches: _.flatten(matches)
+  };
 };
 
 
@@ -1047,17 +1171,11 @@ CanadaStrategy = (function(_super) {
   };
 
   CanadaStrategy.prototype.line_strategies = function() {
-    var line_strats;
-    line_strats = [];
-    line_strats.push([ADDRESSEE, STREET, STREET2, MUNICIPALITY, POSTAL]);
-    line_strats.push([ADDRESSEE, STREET, MUNICIPALITY, POSTAL]);
-    line_strats.push([STREET, STREET2, MUNICIPALITY, POSTAL]);
-    line_strats.push([STREET, MUNICIPALITY, POSTAL]);
-    line_strats.push([ADDRESSEE, STREET, STREET2, MUNICIPALITY_WITH_POSTAL]);
-    line_strats.push([ADDRESSEE, STREET, MUNICIPALITY_WITH_POSTAL]);
-    line_strats.push([STREET, STREET2, MUNICIPALITY_WITH_POSTAL]);
-    line_strats.push([STREET, MUNICIPALITY_WITH_POSTAL]);
-    return line_strats;
+    var lms;
+    lms = new LineMatcherStrategy();
+    lms.add(ADDRESSEE.optional(), STREET, STREET2.optional(), MUNICIPALITY, POSTAL);
+    lms.add(ADDRESSEE.optional(), STREET, STREET2.optional(), MUNICIPALITY_WITH_POSTAL);
+    return lms.all();
   };
 
   return CanadaStrategy;
@@ -1068,44 +1186,25 @@ new CanadaStrategy().register();
 
 
 // -- from: lib/SnailMailAddressParser.coffee -- \\
-var SnailMailAddressParser,
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+var SnailMailAddressParser;
 
 SnailMailAddressParser = (function() {
 
-  function SnailMailAddressParser(defaultCountry) {
-    this._defaultCountry = defaultCountry;
-  }
-
   SnailMailAddressParser.prototype.AddressStrategy = AddressStrategy;
+
+  SnailMailAddressParser.prototype.LineMatcher = LineMatcher;
+
+  SnailMailAddressParser.prototype.LineMatcherStrategy = LineMatcherStrategy;
 
   SnailMailAddressParser.prototype.Version = VERSION;
 
-  SnailMailAddressParser.prototype.parse = function(str, defaultCountry) {
-    var canonical_name, country, last_line, lines, parsed;
+  function SnailMailAddressParser() {}
+
+  SnailMailAddressParser.prototype.parse = function(str, options) {
     if (!_.isString(str)) {
       throw new Error("Address must be a string, got " + (typeof str) + ".");
     }
-    lines = _.filter(_.map(str.split('\n'), function(aline) {
-      return aline.trim();
-    }), _.identity);
-    if (lines.length < 2) {
-      throw new Error("Addresses must be at least two lines long");
-    }
-    last_line = lines[lines.length - 1];
-    if (__indexOf.call(ALL_COUNTRY_IDS, last_line) >= 0) {
-      country = lines.pop();
-    } else if (defaultCountry) {
-      country = defaultCountry;
-    } else {
-      country = this.defaultCountry;
-    }
-    if (!country) {
-      throw new Error("Address parsing cannot determine what country to use");
-    }
-    canonical_name = COUNTRY_NAMES_MAP[country.toLowerCase()];
-    parsed = AddressStrategy.do_parse_address(canonical_name, lines, str);
-    return parsed;
+    return AddressStrategy.do_parse_address(str, options);
   };
 
   return SnailMailAddressParser;
