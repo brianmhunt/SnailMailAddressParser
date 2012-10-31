@@ -44,7 +44,7 @@ describe "LineMatcherStrategy", ->
 #
 strategies = smap.AddressStrategy.all_strategies()
 
-describe "Address strategies ", ->
+describe "Address strategies", ->
   ###
   # Test the strategy for constituents of the correct type
   ###
@@ -71,10 +71,17 @@ describe "Address strategies ", ->
               return lm.isLineMatcherClass
             )
       )
+
       # a list of unique line matchers for this strategy
       line_matchers = {}
+
+      add_line_matcher = (lm) ->
+        line_matchers[lm.name] = lm
+        if lm.options._or
+          add_line_matcher(lm.options._or)
+
       _.each(strats, (strat) ->
-        _.each strat, (lm) -> line_matchers[lm.name] = lm
+        _.each strat, (lm) -> add_line_matcher(lm)
       )
 
       #
@@ -83,15 +90,22 @@ describe "Address strategies ", ->
       _.each(line_matchers, (lm, name) ->
         valid_tests = lm.options.valid_tests
         invalid_tests = lm.options.invalid_tests
-        describe "line matcher #{lm.name}", ->
-          it "has an array of valid tests", ->
-            assert _.isArray(valid_tests)
-            assert valid_tests.length > 0
+        describe "line matcher #{color "pending", lm.name}", ->
+          it "has an object mapping valid tests to expected results", ->
+            assert _.isObject(valid_tests)
+            assert not _.isArray(valid_tests), "valid_tests is an array"
+            assert _.keys(valid_tests).length > 0
 
-          _.each(valid_tests, (test) ->
-            describe "valid data \"#{test}\"", ->
-              it "matches", ->
-                assert lm.match(test)
+          _.each(valid_tests, (expected, test) ->
+            describe "valid data \"#{color "pending", test}\"", ->
+              matches = lm.match(test, false)
+              it "matches #{inspect matches}", ->
+                if not matches
+                  console.log "expr: |#{lm.rex}| is null"
+                  assert false, "#{inspect matches} != #{inspect expected}"
+                if not _.isEqual(matches, expected)
+                  console.log "expr: |#{lm.rex}| !=> #{inspect matches}"
+                  assert false, "#{inspect matches} != #{inspect expected}"
           )
 
           it "has an array of invalid tests", ->
@@ -101,7 +115,10 @@ describe "Address strategies ", ->
           _.each(invalid_tests, (test) ->
             describe "invalid data \"#{test}\"", ->
               it "should not match", ->
-                assert not lm.match(test)
+                match = lm.match(test, false)
+                if match
+                  console.log "expr: |#{lm.rex}| matches: #{inspect match}"
+                  assert false
           )
       )
   ) # /each strategy

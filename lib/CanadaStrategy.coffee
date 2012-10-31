@@ -30,40 +30,91 @@ class CanadaStrategy extends AddressStrategy
   ]
 
   ADDRESSEE = new LineMatcher("Addressee", "(?<addressee> [\\p{L}\\s-\\.]+)",
-    valid_tests: [
-      "Mary Swånson", # (unicode)
-    ],
+    valid_tests: {
+      "Mary Swånson":
+        addressee: "Mary Swånson"
+    },
     invalid_tests: [
       "100 Sampsonite Drive"
     ]
   )
 
-  STREET = new LineMatcher("Street", "(?:(?<suite> [^-]+) \\s* - \\s*)?
-    (?<street_number> \\d+)? \\s+
-    (?<street_name> .*?)",
-    valid_tests: [
-      "100 huntley street",
-      "Ünit 215 - 100 Huntley Street" # (unicode)
-    ],
-    invalid_tests: [
-      "Wallaby Lane"
-    ]
-  )
+  unit = """
+    (?: apt\\.? | apartment | unit | suite | floor | fl\\.?  ) \\s* \\#? \\s+
+  """
 
-  STREET2 = new LineMatcher("Second street line", "(.+)",
-    valid_tests: [
-      "Anything"
-    ], invalid_tests: [
+  street_rex = """
+   (?<street_number> \\d+)? \\s+
+   (?<street_name> (?: \\p{L}|[\\.\\s\\-'])+? )
+  """
+
+  PLAIN_STREET = new LineMatcher "Plain street",
+    street_rex,
+    valid_tests: {
+      "42 Wallaby Lane":
+        street_number: "42"
+        street_name: "Wallaby Lane"
+      "100 Hûntley Street":
+        street_number: "100"
+        street_name: "Hûntley Street"
+    }, invalid_tests: [
+      "Wallaby Lane",
+      "Suite 100, 42 Wallaby Lane",
+      "42 Wallaby Lane, fl. 2-00",
+    ]
+  
+  UNIT_STREET = new LineMatcher "Unit - Street",
+     "(?<suite> [^-]+?) \\s* [\\-,] \\s* #{street_rex}",
+     valid_tests: {
+       "Suite 1100a - 42 Wallaby Ave.":
+         suite: "Suite 1100a"
+         street_number: "42"
+         street_name: "Wallaby Ave."
+     }, invalid_tests: [
+        "100 Wish Line, Unit #212",
+        "Any street with no unit"
+     ]
+
+  STREET_UNIT = new LineMatcher "Street - Unit",
+     "#{street_rex} \\s* [,\\-]? \\s* (?<suite> #{unit} \\s* [\\d\\w]+)",
+     valid_tests: {
+       "42 Wallaby Ave., Suite 1100A":
+         suite: "Suite 1100A"
+         street_number: "42"
+         street_name: "Wallaby Ave."
+       "1 Rainy Road unit 115":
+         suite: "unit 115"
+         street_number: "1"
+         street_name: "Rainy Road"
+     }, invalid_tests: [
+        "100 100 100",
+        "Any street with no unit"
+     ]
+
+  STREET2 = new LineMatcher("Second street line",
+    "(?<street_name_2> .+)",
+    valid_tests: {
+      "Anything":
+        street_name_2: "Anything"
+    }, invalid_tests: [
       ""
     ])
 
+    # XXX: Note that [\p{L}xyz] is *EXTRAORDINARILY* slow. Use (?:\p{L}|xyz)
   MUNICIPALITY = new LineMatcher("Municipality and Province",
-    "(?<municipality> [\\p{L}\\s\\.]+?) \\s* ,? \\s*
+    "(?<municipality> (?:\\p{L}|[\\-'\\s\\.])+?) \\s* ,? \\s*
      (?<province> #{provinces_list.join("|")})",
-     valid_tests: [
-        "St. Pétersberg, ON", # (unicode)
-        "Hudsonville, QC",
-     ],
+     valid_tests: {
+       "Bras-d'Or, NS":
+         municipality: "Bras-d'Or"
+         province: 'NS'
+       "St. Pétersberg, ON":
+         municipality: "St. Pétersberg"
+         province: "ON"
+       "Hudsonville, QC":
+         municipality: "Hudsonville"
+         province: "QC"
+     },
      invalid_tests: [
         "St. Peteresberg, Peterborough, 10005"
      ]
@@ -71,10 +122,12 @@ class CanadaStrategy extends AddressStrategy
 
   POSTAL = new LineMatcher("Postal code",
     "(?<postal> \s*\\w\\d\\w\\s*\\d\\w\\d)",
-    valid_tests: [
-      "H0H0H0",
-      "H0H  0H0",
-    ],
+    valid_tests: {
+      "H0H0H0":
+        postal: 'H0H0H0'
+      "H0H  0H0":
+        postal: 'H0H  0H0'
+    },
     invalid_tests: [
       "HoH 0H0",
       "HoH 0ü0" # (!unicode)
@@ -84,13 +137,18 @@ class CanadaStrategy extends AddressStrategy
   MUNICIPALITY_WITH_POSTAL = new LineMatcher(
     "Municipality, province and postal code",
     "#{MUNICIPALITY.expression} (?: \\s* ,? \\s* #{POSTAL.expression})?",
-    valid_tests: [
-      "One, QC, M5R 1V2",
-      "Two Tee, ON"
-    ], invalid_tests: [
+    valid_tests: {
+      "One, QC, M5R 1V2":
+        municipality: "One"
+        province: "QC"
+        postal: "M5R 1V2"
+      "TreeTree, MB":
+        municipality: "TreeTree"
+        province: "MB"
+        postal: undefined
+    }, invalid_tests: [
       "Two, Two, Two"
     ]
-  
   )
 
   # Return an object with the fields we expect (and defaults)
@@ -112,10 +170,12 @@ class CanadaStrategy extends AddressStrategy
   line_strategies: ->
     lms = new LineMatcherStrategy()
     lms.add(ADDRESSEE.optional(),
-            STREET, STREET2.optional(),
+            PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT),
+            STREET2.optional(),
             MUNICIPALITY, POSTAL)
     lms.add(ADDRESSEE.optional(),
-            STREET, STREET2.optional(),
+            PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT),
+            STREET2.optional(),
             MUNICIPALITY_WITH_POSTAL)
     return lms.all()
 

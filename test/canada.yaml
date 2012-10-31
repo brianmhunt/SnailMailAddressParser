@@ -54,11 +54,11 @@ addresses:
 - given: |
     Mr. Incognito
     221 - 100 Bay Street
-    Toronto, British Columbia
+    Bras d'Or, British Columbia
     M5H 1T1
     Canada
   expect:
-    municipality: Toronto
+    municipality: Bras d'Or
     province: British Columbia
     postal: M5H 1T1
     country: Canada

@@ -19,6 +19,7 @@ class LineMatcher
       is_optional: false
       rex_flags: 'xi'
       valid_tests: []
+      _or: null
     )
 
     @rex = XRegExp("^#{expression}$", @options.rex_flags)
@@ -36,16 +37,35 @@ class LineMatcher
     return copy
 
   is_optional: () -> @options.is_optional
+
+  #
+  # `or` adds alternative matchers to this one, so we can say e.g.
+  # STREET.or(STREET_UNIT).or(UNIT_STREET) and any may match.
+  #
+  or: (matcher) ->
+    if _.isObject @options._or # we already have an alt; push this down
+      if @options._or.name == matcher.name
+        # we have this matcher already as an alt
+        return @
+      @options._or.or(matcher) # add a new leaf
+    else
+      @options._or = matcher
+    # return this, so these can be chained ie
+    # X.or(Y).or(Z) makes X.or = Y and Y.or = Z
+    return @
     
   # match
   # ~~~~~
   # Return an object mapping matched items if the line matches, null otherwise
   #
-  match: (line) ->
+  match: (line, check_or=true) ->
     matches = XRegExp.exec(line, @rex)
 
     if matches == null
-      return null
+      if check_or # <-- used by unit tests to isolate matchers
+        return @options._or?.match?(line) or null
+      else
+        return check_or
 
     # console.log("Match of \"#{line}\" against #{@name}: \"#{@expression}\"")
   

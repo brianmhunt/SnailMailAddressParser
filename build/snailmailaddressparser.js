@@ -887,7 +887,8 @@ LineMatcher = (function() {
       invalid_tests: [],
       is_optional: false,
       rex_flags: 'xi',
-      valid_tests: []
+      valid_tests: [],
+      _or: null
     });
     this.rex = XRegExp("^" + expression + "$", this.options.rex_flags);
   }
@@ -910,11 +911,30 @@ LineMatcher = (function() {
     return this.options.is_optional;
   };
 
-  LineMatcher.prototype.match = function(line) {
-    var EXCLUDED, matched_properties, matches;
+  LineMatcher.prototype.or = function(matcher) {
+    if (_.isObject(this.options._or)) {
+      if (this.options._or.name === matcher.name) {
+        return this;
+      }
+      this.options._or.or(matcher);
+    } else {
+      this.options._or = matcher;
+    }
+    return this;
+  };
+
+  LineMatcher.prototype.match = function(line, check_or) {
+    var EXCLUDED, matched_properties, matches, _ref;
+    if (check_or == null) {
+      check_or = true;
+    }
     matches = XRegExp.exec(line, this.rex);
     if (matches === null) {
-      return null;
+      if (check_or) {
+        return ((_ref = this.options._or) != null ? typeof _ref.match === "function" ? _ref.match(line) : void 0 : void 0) || null;
+      } else {
+        return check_or;
+      }
     }
     EXCLUDED = ['index', 'input'];
     matched_properties = {};
@@ -1115,7 +1135,7 @@ var CanadaStrategy,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 CanadaStrategy = (function(_super) {
-  var ADDRESSEE, MUNICIPALITY, MUNICIPALITY_WITH_POSTAL, POSTAL, STREET, STREET2, provinces_list;
+  var ADDRESSEE, MUNICIPALITY, MUNICIPALITY_WITH_POSTAL, PLAIN_STREET, POSTAL, STREET2, STREET_UNIT, UNIT_STREET, provinces_list, street_rex, unit;
 
   __extends(CanadaStrategy, _super);
 
@@ -1128,32 +1148,111 @@ CanadaStrategy = (function(_super) {
   provinces_list = ["AB", "Alberta", "BC", "British\\s+Columbia", "Manitoba", "MB", "New Brunswick", "NB", "Newfoundland\\s+and\\s+Labrador", "Newfoundland", "NF", "NL", "Newfoundland\\s+&\\s+Labrador", "Northwest Territories", "NT", "Nova Scotia", "NS", "Nunavut", "NU", "ON", "Ontario", "Prince\\s+Edward\\s+Island", "PE", "PEI", "Quebec", "QC", "Saskatchewan", "SK", "Yukon", "YT"];
 
   ADDRESSEE = new LineMatcher("Addressee", "(?<addressee> [\\p{L}\\s-\\.]+)", {
-    valid_tests: ["Mary Swånson"],
+    valid_tests: {
+      "Mary Swånson": {
+        addressee: "Mary Swånson"
+      }
+    },
     invalid_tests: ["100 Sampsonite Drive"]
   });
 
-  STREET = new LineMatcher("Street", "(?:(?<suite> [^-]+) \\s* - \\s*)?    (?<street_number> \\d+)? \\s+    (?<street_name> .*?)", {
-    valid_tests: ["100 huntley street", "Ünit 215 - 100 Huntley Street"],
-    invalid_tests: ["Wallaby Lane"]
+  unit = "(?: apt\\.? | apartment | unit | suite | floor | fl\\.?  ) \\s* \\#? \\s+";
+
+  street_rex = "(?<street_number> \\d+)? \\s+\n(?<street_name> (?: \\p{L}|[\\.\\s\\-'])+? )";
+
+  PLAIN_STREET = new LineMatcher("Plain street", street_rex, {
+    valid_tests: {
+      "42 Wallaby Lane": {
+        street_number: "42",
+        street_name: "Wallaby Lane"
+      },
+      "100 Hûntley Street": {
+        street_number: "100",
+        street_name: "Hûntley Street"
+      }
+    },
+    invalid_tests: ["Wallaby Lane", "Suite 100, 42 Wallaby Lane", "42 Wallaby Lane, fl. 2-00"]
   });
 
-  STREET2 = new LineMatcher("Second street line", "(.+)", {
-    valid_tests: ["Anything"],
+  UNIT_STREET = new LineMatcher("Unit - Street", "(?<suite> [^-]+?) \\s* [\\-,] \\s* " + street_rex, {
+    valid_tests: {
+      "Suite 1100a - 42 Wallaby Ave.": {
+        suite: "Suite 1100a",
+        street_number: "42",
+        street_name: "Wallaby Ave."
+      }
+    },
+    invalid_tests: ["100 Wish Line, Unit #212", "Any street with no unit"]
+  });
+
+  STREET_UNIT = new LineMatcher("Street - Unit", "" + street_rex + " \\s* [,\\-]? \\s* (?<suite> " + unit + " \\s* [\\d\\w]+)", {
+    valid_tests: {
+      "42 Wallaby Ave., Suite 1100A": {
+        suite: "Suite 1100A",
+        street_number: "42",
+        street_name: "Wallaby Ave."
+      },
+      "1 Rainy Road unit 115": {
+        suite: "unit 115",
+        street_number: "1",
+        street_name: "Rainy Road"
+      }
+    },
+    invalid_tests: ["100 100 100", "Any street with no unit"]
+  });
+
+  STREET2 = new LineMatcher("Second street line", "(?<street_name_2> .+)", {
+    valid_tests: {
+      "Anything": {
+        street_name_2: "Anything"
+      }
+    },
     invalid_tests: [""]
   });
 
-  MUNICIPALITY = new LineMatcher("Municipality and Province", "(?<municipality> [\\p{L}\\s\\.]+?) \\s* ,? \\s*     (?<province> " + (provinces_list.join("|")) + ")", {
-    valid_tests: ["St. Pétersberg, ON", "Hudsonville, QC"],
+  MUNICIPALITY = new LineMatcher("Municipality and Province", "(?<municipality> (?:\\p{L}|[\\-'\\s\\.])+?) \\s* ,? \\s*     (?<province> " + (provinces_list.join("|")) + ")", {
+    valid_tests: {
+      "Bras-d'Or, NS": {
+        municipality: "Bras-d'Or",
+        province: 'NS'
+      },
+      "St. Pétersberg, ON": {
+        municipality: "St. Pétersberg",
+        province: "ON"
+      },
+      "Hudsonville, QC": {
+        municipality: "Hudsonville",
+        province: "QC"
+      }
+    },
     invalid_tests: ["St. Peteresberg, Peterborough, 10005"]
   });
 
   POSTAL = new LineMatcher("Postal code", "(?<postal> \s*\\w\\d\\w\\s*\\d\\w\\d)", {
-    valid_tests: ["H0H0H0", "H0H  0H0"],
+    valid_tests: {
+      "H0H0H0": {
+        postal: 'H0H0H0'
+      },
+      "H0H  0H0": {
+        postal: 'H0H  0H0'
+      }
+    },
     invalid_tests: ["HoH 0H0", "HoH 0ü0"]
   });
 
   MUNICIPALITY_WITH_POSTAL = new LineMatcher("Municipality, province and postal code", "" + MUNICIPALITY.expression + " (?: \\s* ,? \\s* " + POSTAL.expression + ")?", {
-    valid_tests: ["One, QC, M5R 1V2", "Two Tee, ON"],
+    valid_tests: {
+      "One, QC, M5R 1V2": {
+        municipality: "One",
+        province: "QC",
+        postal: "M5R 1V2"
+      },
+      "TreeTree, MB": {
+        municipality: "TreeTree",
+        province: "MB",
+        postal: void 0
+      }
+    },
     invalid_tests: ["Two, Two, Two"]
   });
 
@@ -1173,8 +1272,8 @@ CanadaStrategy = (function(_super) {
   CanadaStrategy.prototype.line_strategies = function() {
     var lms;
     lms = new LineMatcherStrategy();
-    lms.add(ADDRESSEE.optional(), STREET, STREET2.optional(), MUNICIPALITY, POSTAL);
-    lms.add(ADDRESSEE.optional(), STREET, STREET2.optional(), MUNICIPALITY_WITH_POSTAL);
+    lms.add(ADDRESSEE.optional(), PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT), STREET2.optional(), MUNICIPALITY, POSTAL);
+    lms.add(ADDRESSEE.optional(), PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT), STREET2.optional(), MUNICIPALITY_WITH_POSTAL);
     return lms.all();
   };
 
