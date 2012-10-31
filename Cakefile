@@ -84,6 +84,29 @@ task 'test', 'Run tests in Mocha (via "npm test")', (options) ->
   log "Cake is running: #{MOCHA_CMD} #{args.join(" ")}"
   spawn MOCHA_CMD, args, customFds: [0, 1, 2]
 
+task 'publish', 'Publish a patch release on npm (increments patch number)', ->
+  semver = require('semver')
+
+  # read package.json
+  pkg = JSON.parse(fs.readFileSync('package.json', "utf8"))
+
+  # get and increment version
+  version = pkg.version
+  pkg.version = semver.inc(version, 'patch')
+
+  # notify of version change and write new package.json
+  console.log "version incrementing from #{version} => #{pkg.version}"
+  fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2), "utf8")
+
+  # build latest version
+  invoke 'toast'
+
+  # publish
+  args = ['publish']
+  spawn "npm", args, customFds: [0,1,2]
+
+
+
 task 'toast', "Build the project into the build/ dir", (options) ->
   # although I stopped using coffee-toaster (because it wouldn't track
   # dependencies), its builder.coffee was a helpful guide to how to perform the
