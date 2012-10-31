@@ -39,10 +39,6 @@ class CanadaStrategy extends AddressStrategy
     ]
   )
 
-  unit = """
-    (?: apt\\.? | apartment | unit | suite | floor | fl\\.?  ) \\s* \\#? \\s+
-  """
-
   street_rex = """
    (?<street_number> \\d+)? \\s+
    (?<street_name> (?: \\p{L}|[\\.\\s\\-'])+? )
@@ -63,6 +59,10 @@ class CanadaStrategy extends AddressStrategy
       "42 Wallaby Lane, fl. 2-00",
     ]
   
+  unit = """
+    (?: apt\\.? | apartment | unit | suite | floor | fl\\.? | ) \\s* [#]? \\s*
+  """
+
   UNIT_STREET = new LineMatcher "Unit - Street",
      "(?<suite> [^-]+?) \\s* [\\-,] \\s* #{street_rex}",
      valid_tests: {
@@ -76,14 +76,14 @@ class CanadaStrategy extends AddressStrategy
      ]
 
   STREET_UNIT = new LineMatcher "Street - Unit",
-     "#{street_rex} \\s* [,\\-]? \\s* (?<suite> #{unit} \\s* [\\d\\w]+)",
+     "#{street_rex} \\s* [,\\-]? \\s* (?<suite> #{unit} [\\d\\w]+)",
      valid_tests: {
        "42 Wallaby Ave., Suite 1100A":
          suite: "Suite 1100A"
          street_number: "42"
          street_name: "Wallaby Ave."
-       "1 Rainy Road unit 115":
-         suite: "unit 115"
+       "1 Rainy Road #115":
+         suite: "#115"
          street_number: "1"
          street_name: "Rainy Road"
      }, invalid_tests: [

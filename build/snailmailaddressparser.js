@@ -20,7 +20,7 @@ define(['underscore', 'xregexp'], function (_, xregexp) {
   var XRegExp = xregexp.XRegExp, VERSION;
   XRegExp.addUnicodePackage();
 /*  ---- Begin AMD content ---- */
-VERSION = "0.1.16";
+VERSION = "0.1.17";
 // -- from: lib/Debug.coffee -- \\
 /*
 #
@@ -1156,8 +1156,6 @@ CanadaStrategy = (function(_super) {
     invalid_tests: ["100 Sampsonite Drive"]
   });
 
-  unit = "(?: apt\\.? | apartment | unit | suite | floor | fl\\.?  ) \\s* \\#? \\s+";
-
   street_rex = "(?<street_number> \\d+)? \\s+\n(?<street_name> (?: \\p{L}|[\\.\\s\\-'])+? )";
 
   PLAIN_STREET = new LineMatcher("Plain street", street_rex, {
@@ -1174,6 +1172,8 @@ CanadaStrategy = (function(_super) {
     invalid_tests: ["Wallaby Lane", "Suite 100, 42 Wallaby Lane", "42 Wallaby Lane, fl. 2-00"]
   });
 
+  unit = "(?: apt\\.? | apartment | unit | suite | floor | fl\\.? | ) \\s* [#]? \\s*";
+
   UNIT_STREET = new LineMatcher("Unit - Street", "(?<suite> [^-]+?) \\s* [\\-,] \\s* " + street_rex, {
     valid_tests: {
       "Suite 1100a - 42 Wallaby Ave.": {
@@ -1185,15 +1185,15 @@ CanadaStrategy = (function(_super) {
     invalid_tests: ["100 Wish Line, Unit #212", "Any street with no unit"]
   });
 
-  STREET_UNIT = new LineMatcher("Street - Unit", "" + street_rex + " \\s* [,\\-]? \\s* (?<suite> " + unit + " \\s* [\\d\\w]+)", {
+  STREET_UNIT = new LineMatcher("Street - Unit", "" + street_rex + " \\s* [,\\-]? \\s* (?<suite> " + unit + " [\\d\\w]+)", {
     valid_tests: {
       "42 Wallaby Ave., Suite 1100A": {
         suite: "Suite 1100A",
         street_number: "42",
         street_name: "Wallaby Ave."
       },
-      "1 Rainy Road unit 115": {
-        suite: "unit 115",
+      "1 Rainy Road #115": {
+        suite: "#115",
         street_number: "1",
         street_name: "Rainy Road"
       }
