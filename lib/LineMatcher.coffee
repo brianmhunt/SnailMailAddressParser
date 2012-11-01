@@ -42,17 +42,29 @@ class LineMatcher
   # `or` adds alternative matchers to this one, so we can say e.g.
   # STREET.or(STREET_UNIT).or(UNIT_STREET) and any may match.
   #
+  # Returns a new LineMatcher instance
+  #
   or: (matcher) ->
+    lm = @
+
     if _.isObject @options._or # we already have an alt; push this down
       if @options._or.name == matcher.name
         # we have this matcher already as an alt
         return @
-      @options._or.or(matcher) # add a new leaf
+
+      @options._or = @options._or.or(matcher) # add a new leaf
     else
-      @options._or = matcher
+      # return a copy  ---  we don't want to permanently modify this
+      # LineMatcher
+      # i.e. STREET.or(UNIT_STREET)
+      # should not mean that subsequent uses of STREET should also match
+      # UNIT_STREET
+      lm = _.clone(@)
+      lm.options._or = matcher
+
     # return this, so these can be chained ie
     # X.or(Y).or(Z) makes X.or = Y and Y.or = Z
-    return @
+    return lm
     
   # match
   # ~~~~~

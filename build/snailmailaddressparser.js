@@ -912,15 +912,18 @@ LineMatcher = (function() {
   };
 
   LineMatcher.prototype.or = function(matcher) {
+    var lm;
+    lm = this;
     if (_.isObject(this.options._or)) {
       if (this.options._or.name === matcher.name) {
         return this;
       }
-      this.options._or.or(matcher);
+      this.options._or = this.options._or.or(matcher);
     } else {
-      this.options._or = matcher;
+      lm = _.clone(this);
+      lm.options._or = matcher;
     }
-    return this;
+    return lm;
   };
 
   LineMatcher.prototype.match = function(line, check_or) {
