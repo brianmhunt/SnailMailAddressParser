@@ -20,7 +20,7 @@ define(['underscore', 'xregexp'], function (_, xregexp) {
   var XRegExp = xregexp.XRegExp, VERSION;
   XRegExp.addUnicodePackage();
 /*  ---- Begin AMD content ---- */
-VERSION = "0.1.18";
+VERSION = "0.1.19";
 // -- from: lib/Debug.coffee -- \\
 /*
 #
@@ -1186,7 +1186,7 @@ CanadaStrategy = (function(_super) {
     invalid_tests: ["Wallaby Lane", "Suite 100, 42 Wallaby Lane", "42 Wallaby Lane, fl. 2-00"]
   });
 
-  unit = "(?: apt\\.? | apartment | unit | suite | floor | fl\\.? | ) \\s* [#]? \\s*";
+  unit = "(?: apt\\.? | apartment | unit | suite | floor | fl\\.?\n  | app     | bureau | ) \\s* (?: [#] | no\\.? | number \s+ )? \\s*";
 
   UNIT_STREET = new LineMatcher("Unit - Street", "(?<suite> [^-]+?) \\s* [\\-,] \\s* " + street_rex, {
     valid_tests: {

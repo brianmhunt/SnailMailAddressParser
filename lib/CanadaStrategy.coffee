@@ -71,7 +71,8 @@ class CanadaStrategy extends AddressStrategy
     ]
   
   unit = """
-    (?: apt\\.? | apartment | unit | suite | floor | fl\\.? | ) \\s* [#]? \\s*
+    (?: apt\\.? | apartment | unit | suite | floor | fl\\.?
+      | app     | bureau | ) \\s* (?: [#] | no\\.? | number \s+ )? \\s*
   """
 
   UNIT_STREET = new LineMatcher "Unit - Street",

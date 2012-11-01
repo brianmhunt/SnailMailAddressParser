@@ -1,6 +1,6 @@
 {
   "name": "snailmailaddressparser",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "A Javascript library to parse snail mail addresses into components",
   "author": "Brian M Hunt <brianmhunt@gmail.com>",
   "dependencies": {

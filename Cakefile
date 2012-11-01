@@ -84,7 +84,7 @@ task 'test', 'Run tests in Mocha (via "npm test")', (options) ->
   log "Cake is running: #{MOCHA_CMD} #{args.join(" ")}"
   spawn MOCHA_CMD, args, customFds: [0, 1, 2]
 
-task 'publish', 'Publish a patch release on npm (increments patch number)', ->
+task 'deploy', 'Publish a patch release on npm (increments patch number)', ->
   semver = require('semver')
 
   # read package.json

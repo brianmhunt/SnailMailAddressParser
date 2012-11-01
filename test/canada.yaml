@@ -7,7 +7,7 @@ country: Canada
 addresses:
 
 - given: |
-    100 Bay Street
+    100 Bay Street, Unit no. 67468
     Toronto, ON M5H 1T1 
   expect:
     municipality: Toronto
@@ -18,7 +18,7 @@ addresses:
     street_name: Bay Street
     street_name_2: 
     addressee: 
-    suite: 
+    suite: Unit no. 67468
     care_of: 
 
 - given: |
