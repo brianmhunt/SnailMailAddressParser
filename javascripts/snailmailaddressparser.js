@@ -912,15 +912,18 @@ LineMatcher = (function() {
   };
 
   LineMatcher.prototype.or = function(matcher) {
+    var lm;
+    lm = this;
     if (_.isObject(this.options._or)) {
       if (this.options._or.name === matcher.name) {
         return this;
       }
-      this.options._or.or(matcher);
+      this.options._or = this.options._or.or(matcher);
     } else {
-      this.options._or = matcher;
+      lm = _.clone(this);
+      lm.options._or = matcher;
     }
-    return this;
+    return lm;
   };
 
   LineMatcher.prototype.match = function(line, check_or) {
@@ -1126,7 +1129,7 @@ AddressStrategy.do_parse_address = function(addr_string, options) {
 # A way to parse Canadian addresses
 #
 # Reference: 'Addressing Guidelines'
-# <http://www.canadapost.ca/tools/pg/manual/PGaddress-e.asp>
+# <http://www.canadapost.ca/tools/pg/manual/PGaddress-e.asp> 2012-11-01
 #
 */
 
@@ -1135,7 +1138,7 @@ var CanadaStrategy,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 CanadaStrategy = (function(_super) {
-  var ADDRESSEE, MUNICIPALITY, MUNICIPALITY_WITH_POSTAL, PLAIN_STREET, POSTAL, STREET2, STREET_UNIT, SUITE, UNIT_STREET, provinces_list, street_rex, unit;
+  var ADDRESSEE, CARE_OF, MUNICIPALITY, MUNICIPALITY_WITH_POSTAL, PLAIN_STREET, POSTAL, STREET2, STREET_UNIT, SUITE, UNIT_STREET, person_rex, provinces_list, street_rex, unit;
 
   __extends(CanadaStrategy, _super);
 
@@ -1147,13 +1150,24 @@ CanadaStrategy = (function(_super) {
 
   provinces_list = ["AB", "Alberta", "BC", "British\\s+Columbia", "Manitoba", "MB", "New Brunswick", "NB", "Newfoundland\\s+and\\s+Labrador", "Newfoundland", "NF", "NL", "Newfoundland\\s+&\\s+Labrador", "Northwest Territories", "NT", "Nova Scotia", "NS", "Nunavut", "NU", "ON", "Ontario", "Prince\\s+Edward\\s+Island", "PE", "PEI", "Quebec", "QC", "Saskatchewan", "SK", "Yukon", "YT"];
 
-  ADDRESSEE = new LineMatcher("Addressee", "(?<addressee> [\\p{L}\\s-\\.]+)", {
+  person_rex = "(?: \\p{L} | [\\s\\-\\.])+ ";
+
+  ADDRESSEE = new LineMatcher("Addressee", "(?<addressee> " + person_rex + ")", {
     valid_tests: {
       "Mary Swånson": {
         addressee: "Mary Swånson"
       }
     },
     invalid_tests: ["100 Sampsonite Drive"]
+  });
+
+  CARE_OF = new LineMatcher("Care of (c/o)", "(?: c/o | ℅) \\s+ (?<care_of> " + person_rex + ")", {
+    valid_tests: {
+      "c/o Sinterklaas": {
+        care_of: "Sinterklaas"
+      }
+    },
+    invalid_tests: ["no c/o? fine. be that way."]
   });
 
   street_rex = "(?<street_number> \\d+)? \\s+\n(?<street_name> (?: \\p{L}|[\\.\\s\\-'])+? )";
@@ -1269,6 +1283,7 @@ CanadaStrategy = (function(_super) {
     return {
       suite: '',
       addressee: '',
+      care_of: '',
       street_number: '',
       street_name_2: '',
       municipality: '',
@@ -1281,10 +1296,10 @@ CanadaStrategy = (function(_super) {
   CanadaStrategy.prototype.line_strategies = function() {
     var lms;
     lms = new LineMatcherStrategy();
-    lms.add(ADDRESSEE.optional(), PLAIN_STREET, SUITE, MUNICIPALITY, POSTAL);
-    lms.add(ADDRESSEE.optional(), PLAIN_STREET, SUITE, MUNICIPALITY_WITH_POSTAL);
-    lms.add(ADDRESSEE.optional(), PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT), STREET2.optional(), MUNICIPALITY, POSTAL);
-    lms.add(ADDRESSEE.optional(), PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT), STREET2.optional(), MUNICIPALITY_WITH_POSTAL);
+    lms.add(ADDRESSEE.optional(), CARE_OF.optional(), PLAIN_STREET, SUITE, MUNICIPALITY, POSTAL);
+    lms.add(ADDRESSEE.optional(), CARE_OF.optional(), PLAIN_STREET, SUITE, MUNICIPALITY_WITH_POSTAL);
+    lms.add(ADDRESSEE.optional(), CARE_OF.optional(), PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT), STREET2.optional(), MUNICIPALITY, POSTAL);
+    lms.add(ADDRESSEE.optional(), CARE_OF.optional(), PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT), STREET2.optional(), MUNICIPALITY_WITH_POSTAL);
     return lms.all();
   };
 
