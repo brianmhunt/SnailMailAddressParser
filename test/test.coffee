@@ -124,8 +124,6 @@ describe "Address strategies", ->
   ) # /each strategy
 
 
-
-
 #
 #   YAML TESTS
 #   ----------

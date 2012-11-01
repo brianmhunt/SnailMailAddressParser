@@ -4,7 +4,7 @@
 # A way to parse Canadian addresses
 #
 # Reference: 'Addressing Guidelines'
-# <http://www.canadapost.ca/tools/pg/manual/PGaddress-e.asp>
+# <http://www.canadapost.ca/tools/pg/manual/PGaddress-e.asp> 2012-11-01
 #
 ###
 #
@@ -29,15 +29,26 @@ class CanadaStrategy extends AddressStrategy
     "Yukon", "YT",
   ]
 
-  ADDRESSEE = new LineMatcher("Addressee", "(?<addressee> [\\p{L}\\s-\\.]+)",
+  person_rex = "(?: \\p{L} | [\\s\\-\\.])+ "
+
+  ADDRESSEE = new LineMatcher("Addressee",
+    "(?<addressee> #{person_rex})",
     valid_tests: {
       "Mary Swånson":
         addressee: "Mary Swånson"
-    },
-    invalid_tests: [
+    }, invalid_tests: [
       "100 Sampsonite Drive"
     ]
   )
+
+  CARE_OF = new LineMatcher "Care of (c/o)",
+    "(?: c/o | ℅) \\s+ (?<care_of> #{person_rex})",
+    valid_tests: {
+      "c/o Sinterklaas":
+        care_of: "Sinterklaas"
+    }, invalid_tests: [
+      "no c/o? fine. be that way."
+    ]
 
   street_rex = """
    (?<street_number> \\d+)? \\s+
@@ -165,6 +176,7 @@ class CanadaStrategy extends AddressStrategy
     return {
       suite: ''
       addressee: ''
+      care_of: ''
       street_number: ''
       street_name_2: ''
       municipality: ''
@@ -179,11 +191,13 @@ class CanadaStrategy extends AddressStrategy
   line_strategies: ->
     lms = new LineMatcherStrategy()
     lms.add(ADDRESSEE.optional(),
+            CARE_OF.optional(),
             PLAIN_STREET,
             SUITE,
             MUNICIPALITY, POSTAL)
 
     lms.add(ADDRESSEE.optional(),
+            CARE_OF.optional(),
             PLAIN_STREET,
             SUITE,
             MUNICIPALITY_WITH_POSTAL)
@@ -191,11 +205,13 @@ class CanadaStrategy extends AddressStrategy
     # note: STREET2 can match anything Suite can.
 
     lms.add(ADDRESSEE.optional(),
+            CARE_OF.optional(),
             PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT),
             STREET2.optional(),
             MUNICIPALITY, POSTAL)
 
     lms.add(ADDRESSEE.optional(),
+            CARE_OF.optional(),
             PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT),
             STREET2.optional(),
             MUNICIPALITY_WITH_POSTAL)

@@ -19,6 +19,7 @@ addresses:
     street_name_2: 
     addressee: 
     suite: 
+    care_of: 
 
 - given: |
     Mr. Incognito
@@ -34,14 +35,17 @@ addresses:
     street_name_2:
     addressee: Mr. Incognito
     suite: 
+    care_of: 
 
 - given: |
     Mr. Incognito
+    c/o The Paper Stréet Company
     221 - 100 Bay Street
     Toronto, Newfoundland and Labrador M5H 1T1
     Canada
   expect:
     municipality: Toronto
+    care_of: The Paper Stréet Company
     province: Newfoundland and Labrador
     postal: M5H 1T1
     country: Canada
@@ -53,6 +57,7 @@ addresses:
 
 - given: |
     Mr. Incognito
+    ℅ Allabaster Coloring Books Inc.
     100 Bay Street
     # 221
     Bras d'Or, British Columbia
@@ -68,4 +73,5 @@ addresses:
     street_name_2:
     addressee: Mr. Incognito
     suite: "# 221"
+    care_of: Allabaster Coloring Books Inc.
 
