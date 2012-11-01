@@ -1135,7 +1135,7 @@ var CanadaStrategy,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 CanadaStrategy = (function(_super) {
-  var ADDRESSEE, MUNICIPALITY, MUNICIPALITY_WITH_POSTAL, PLAIN_STREET, POSTAL, STREET2, STREET_UNIT, UNIT_STREET, provinces_list, street_rex, unit;
+  var ADDRESSEE, MUNICIPALITY, MUNICIPALITY_WITH_POSTAL, PLAIN_STREET, POSTAL, STREET2, STREET_UNIT, SUITE, UNIT_STREET, provinces_list, street_rex, unit;
 
   __extends(CanadaStrategy, _super);
 
@@ -1210,6 +1210,15 @@ CanadaStrategy = (function(_super) {
     invalid_tests: [""]
   });
 
+  SUITE = new LineMatcher("Suite number", "(?<suite> " + unit + " [\\d\\w]+)", {
+    valid_tests: {
+      'Suite # 1024': {
+        suite: 'Suite # 1024'
+      }
+    },
+    invalid_tests: ['10 10']
+  });
+
   MUNICIPALITY = new LineMatcher("Municipality and Province", "(?<municipality> (?:\\p{L}|[\\-'\\s\\.])+?) \\s* ,? \\s*     (?<province> " + (provinces_list.join("|")) + ")", {
     valid_tests: {
       "Bras-d'Or, NS": {
@@ -1272,6 +1281,8 @@ CanadaStrategy = (function(_super) {
   CanadaStrategy.prototype.line_strategies = function() {
     var lms;
     lms = new LineMatcherStrategy();
+    lms.add(ADDRESSEE.optional(), PLAIN_STREET, SUITE, MUNICIPALITY, POSTAL);
+    lms.add(ADDRESSEE.optional(), PLAIN_STREET, SUITE, MUNICIPALITY_WITH_POSTAL);
     lms.add(ADDRESSEE.optional(), PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT), STREET2.optional(), MUNICIPALITY, POSTAL);
     lms.add(ADDRESSEE.optional(), PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT), STREET2.optional(), MUNICIPALITY_WITH_POSTAL);
     return lms.all();

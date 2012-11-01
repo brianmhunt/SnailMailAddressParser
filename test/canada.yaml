@@ -53,7 +53,8 @@ addresses:
 
 - given: |
     Mr. Incognito
-    221 - 100 Bay Street
+    100 Bay Street
+    # 221
     Bras d'Or, British Columbia
     M5H 1T1
     Canada
@@ -66,5 +67,5 @@ addresses:
     street_name: Bay Street
     street_name_2:
     addressee: Mr. Incognito
-    suite: 221
+    suite: "# 221"
 

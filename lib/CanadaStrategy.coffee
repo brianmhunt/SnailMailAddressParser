@@ -91,14 +91,23 @@ class CanadaStrategy extends AddressStrategy
         "Any street with no unit"
      ]
 
-  STREET2 = new LineMatcher("Second street line",
+  STREET2 = new LineMatcher "Second street line",
     "(?<street_name_2> .+)",
     valid_tests: {
       "Anything":
         street_name_2: "Anything"
     }, invalid_tests: [
       ""
-    ])
+    ]
+
+  SUITE = new LineMatcher "Suite number",
+    "(?<suite> #{unit} [\\d\\w]+)",
+    valid_tests: {
+      'Suite # 1024':
+        suite: 'Suite # 1024'
+    }, invalid_tests: [
+      '10 10'
+    ]
 
     # XXX: Note that [\p{L}xyz] is *EXTRAORDINARILY* slow. Use (?:\p{L}|xyz)
   MUNICIPALITY = new LineMatcher("Municipality and Province",
@@ -170,13 +179,27 @@ class CanadaStrategy extends AddressStrategy
   line_strategies: ->
     lms = new LineMatcherStrategy()
     lms.add(ADDRESSEE.optional(),
+            PLAIN_STREET,
+            SUITE,
+            MUNICIPALITY, POSTAL)
+
+    lms.add(ADDRESSEE.optional(),
+            PLAIN_STREET,
+            SUITE,
+            MUNICIPALITY_WITH_POSTAL)
+
+    # note: STREET2 can match anything Suite can.
+
+    lms.add(ADDRESSEE.optional(),
             PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT),
             STREET2.optional(),
             MUNICIPALITY, POSTAL)
+
     lms.add(ADDRESSEE.optional(),
             PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT),
             STREET2.optional(),
             MUNICIPALITY_WITH_POSTAL)
+
     return lms.all()
 
 new CanadaStrategy().register()
