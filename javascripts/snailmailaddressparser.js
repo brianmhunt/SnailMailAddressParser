@@ -20,7 +20,7 @@ define(['underscore', 'xregexp'], function (_, xregexp) {
   var XRegExp = xregexp.XRegExp, VERSION;
   XRegExp.addUnicodePackage();
 /*  ---- Begin AMD content ---- */
-VERSION = "0.1.20-beta";
+VERSION = "0.1.21";
 // -- from: lib/Debug.coffee -- \\
 /*
 #
