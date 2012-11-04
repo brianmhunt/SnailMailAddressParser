@@ -91,7 +91,7 @@ class AddressStrategy
     console.log("\n** Debugging:\n#{addr_str}")
 
     _.each(strategies, (strat, index) =>
-      console.log "Skipping strategy #{index}; mismatched line count"
+      # console.log "Skipping strategy #{index}; mismatched line count"
       # silently skip strategies that correspond to different line counts
       if strat.length != addr_lines.length
         return

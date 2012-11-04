@@ -1054,7 +1054,6 @@ AddressStrategy = (function() {
     console.log("\n** Debugging:\n" + addr_str);
     return _.each(strategies, function(strat, index) {
       var results;
-      console.log("Skipping strategy " + index + "; mismatched line count");
       if (strat.length !== addr_lines.length) {
         return;
       }
@@ -1172,7 +1171,7 @@ CanadaStrategy = (function(_super) {
     invalid_tests: ["no c/o? fine. be that way."]
   });
 
-  street_rex = "(?:\n  (?<street_number> \\d+) \\s+\n   (?<street_name> (?: \\p{L}|[\\.\\s\\-'])+? )\n|\n  (?<street_name>\n    (?: \\p{L} | [\\.\\s\\-'])+     # street name\n    (?: " + (street_types.join("|")) + ")  # street type\n    (?: \\w+)                      # (short) north/east/west/etc\n  )\n)";
+  street_rex = "(?<street_number> \\d+) \\s+\n(?<street_name> (?: \\p{L}|[\\.\\s\\-'])+? )";
 
   PLAIN_STREET = new LineMatcher("Plain street", street_rex, {
     valid_tests: {
@@ -1190,7 +1189,7 @@ CanadaStrategy = (function(_super) {
 
   unit = "(?:\n  (?:\n    (?: apt\\.? | apartment | unit | suite | floor | fl\\.? | app | bureau )\n      \\s* (?: \\s [#] | no\\.? | number \s+ )?\n    | [#]\n    | no\\.\n  )\n  \\s*\n    [\\d\\w]+\n|\n  [\\d\\w]+\n  \\s*\n  (?: floor | fl\\. )\n)";
 
-  UNIT_STREET = new LineMatcher("Unit - Street", "(?<suite> " + unit + ") \\s* [\\-,\\s] \\s* " + street_rex, {
+  UNIT_STREET = new LineMatcher("Unit - Street", "(?<suite> " + unit + "|\\d+) \\s* [\\-,\\s] \\s* " + street_rex, {
     valid_tests: {
       "Suite 1100a - 42 Wallaby Ave.": {
         suite: "Suite 1100a",
@@ -1212,11 +1211,6 @@ CanadaStrategy = (function(_super) {
         suite: "#115",
         street_number: "1",
         street_name: "Rainy Road"
-      },
-      "Beothuk Building, 4th Floor": {
-        street_number: void 0,
-        street_name: "Beothuk Building",
-        suite: "4th Floor"
       }
     },
     invalid_tests: ["100 100 100", "Any street without a given unit"]
