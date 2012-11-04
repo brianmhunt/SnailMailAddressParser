@@ -103,6 +103,21 @@ class CanadaStrategy extends AddressStrategy
         "Any street with no unit"
      ]
 
+  PO_BOX = new LineMatcher "Post Office Box",
+    """(?<po_box>P\\.?\\s* O\\.?\\s* BOX \\s* \\s* \\d+ \\s* ,? \\s*
+       (?: (?:stn\\.?|station|rpo\\.?|rr\\.?) \\s* \\w+)? )""",
+
+    valid_tests: {
+      "PO Box 1200":
+        po_box: "PO Box 1200"
+      "P.O. Box 1200 stn A":
+        po_box: "P.O. Box 1200 stn A"
+      "P.O. Box 39, RR1":
+        po_box: "P.O. Box 39, RR1"
+    }, invalid_tests: [
+      "No PO",
+    ]
+
   STREET2 = new LineMatcher "Second street line",
     "(?<street_name_2> .+)",
     valid_tests: {
@@ -179,7 +194,9 @@ class CanadaStrategy extends AddressStrategy
       addressee: ''
       care_of: ''
       street_number: ''
+      street_name: ''
       street_name_2: ''
+      po_box: ''
       municipality: ''
       province: ''
       postal: ''
@@ -207,13 +224,13 @@ class CanadaStrategy extends AddressStrategy
 
     lms.add(ADDRESSEE.optional(),
             CARE_OF.optional(),
-            PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT),
+            PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT).or(PO_BOX),
             STREET2.optional(),
             MUNICIPALITY, POSTAL)
 
     lms.add(ADDRESSEE.optional(),
             CARE_OF.optional(),
-            PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT),
+            PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT).or(PO_BOX),
             STREET2.optional(),
             MUNICIPALITY_WITH_POSTAL)
 

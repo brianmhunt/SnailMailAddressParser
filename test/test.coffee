@@ -90,7 +90,7 @@ describe "Address strategies", ->
       _.each(line_matchers, (lm, name) ->
         valid_tests = lm.options.valid_tests
         invalid_tests = lm.options.invalid_tests
-        describe "line matcher #{color "pending", lm.name}", ->
+        describe "line matcher #{color "green", lm.name}", ->
           it "has an object mapping valid tests to expected results", ->
             assert _.isObject(valid_tests)
             assert not _.isArray(valid_tests), "valid_tests is an array"
@@ -163,7 +163,7 @@ _parsed_object_test = (parsed, expected) ->
         if not _.has(match, key)
           assert.fail("the parsed matches do not have #{key}")
           return
-        
+
         assert.equal(match[key], value)
 
     it "has no extra keys", () ->

@@ -1138,7 +1138,7 @@ var CanadaStrategy,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 CanadaStrategy = (function(_super) {
-  var ADDRESSEE, CARE_OF, MUNICIPALITY, MUNICIPALITY_WITH_POSTAL, PLAIN_STREET, POSTAL, STREET2, STREET_UNIT, SUITE, UNIT_STREET, person_rex, provinces_list, street_rex, unit;
+  var ADDRESSEE, CARE_OF, MUNICIPALITY, MUNICIPALITY_WITH_POSTAL, PLAIN_STREET, POSTAL, PO_BOX, STREET2, STREET_UNIT, SUITE, UNIT_STREET, person_rex, provinces_list, street_rex, unit;
 
   __extends(CanadaStrategy, _super);
 
@@ -1215,6 +1215,21 @@ CanadaStrategy = (function(_super) {
     invalid_tests: ["100 100 100", "Any street with no unit"]
   });
 
+  PO_BOX = new LineMatcher("Post Office Box", "(?<po_box>P\\.?\\s* O\\.?\\s* BOX \\s* \\s* \\d+ \\s* ,? \\s*\n(?: (?:stn\\.?|station|rpo\\.?|rr\\.?) \\s* \\w+)? )", {
+    valid_tests: {
+      "PO Box 1200": {
+        po_box: "PO Box 1200"
+      },
+      "P.O. Box 1200 stn A": {
+        po_box: "P.O. Box 1200 stn A"
+      },
+      "P.O. Box 39, RR1": {
+        po_box: "P.O. Box 39, RR1"
+      }
+    },
+    invalid_tests: ["No PO"]
+  });
+
   STREET2 = new LineMatcher("Second street line", "(?<street_name_2> .+)", {
     valid_tests: {
       "Anything": {
@@ -1285,7 +1300,9 @@ CanadaStrategy = (function(_super) {
       addressee: '',
       care_of: '',
       street_number: '',
+      street_name: '',
       street_name_2: '',
+      po_box: '',
       municipality: '',
       province: '',
       postal: '',
@@ -1298,8 +1315,8 @@ CanadaStrategy = (function(_super) {
     lms = new LineMatcherStrategy();
     lms.add(ADDRESSEE.optional(), CARE_OF.optional(), PLAIN_STREET, SUITE, MUNICIPALITY, POSTAL);
     lms.add(ADDRESSEE.optional(), CARE_OF.optional(), PLAIN_STREET, SUITE, MUNICIPALITY_WITH_POSTAL);
-    lms.add(ADDRESSEE.optional(), CARE_OF.optional(), PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT), STREET2.optional(), MUNICIPALITY, POSTAL);
-    lms.add(ADDRESSEE.optional(), CARE_OF.optional(), PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT), STREET2.optional(), MUNICIPALITY_WITH_POSTAL);
+    lms.add(ADDRESSEE.optional(), CARE_OF.optional(), PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT).or(PO_BOX), STREET2.optional(), MUNICIPALITY, POSTAL);
+    lms.add(ADDRESSEE.optional(), CARE_OF.optional(), PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT).or(PO_BOX), STREET2.optional(), MUNICIPALITY_WITH_POSTAL);
     return lms.all();
   };
 

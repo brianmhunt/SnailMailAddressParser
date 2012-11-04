@@ -17,6 +17,7 @@ addresses:
     street_number: 100
     street_name: Bay Street
     street_name_2: 
+    po_box: 
     addressee: 
     suite: Unit no. 67468
     care_of: 
@@ -35,6 +36,7 @@ addresses:
     street_name_2:
     addressee: Mr. Incognito
     suite: 
+    po_box: 
     care_of: 
 
 - given: |
@@ -53,6 +55,7 @@ addresses:
     street_name: Bay Street
     street_name_2:
     addressee: Mr. Incognito
+    po_box: 
     suite: 221
 
 - given: |
@@ -73,5 +76,24 @@ addresses:
     street_name_2:
     addressee: Mr. Incognito
     suite: "# 221"
+    po_box: 
     care_of: Allabaster Coloring Books Inc.
+
+- given: |
+    John Dear
+    P.O. Box 13005
+    Manatee Sq. Postal Outlet
+    St. John's, MB, F9A 2X9
+  expect:
+    municipality: St. John's
+    province: MB
+    country: Canada
+    postal: F9A 2X9
+    street_number:
+    street_name:
+    street_name_2: Manatee Sq. Postal Outlet
+    addressee: John Dear
+    suite:
+    po_box: P.O. Box 13005
+    care_of:
 
