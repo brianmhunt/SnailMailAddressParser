@@ -3,9 +3,9 @@ $(function () {
         $out = $("#out"),
         smap = window.snailmailaddressparser;
 
-    $in.on("keyup", _.debounce(function () {
+    function update() {
         var obj;
-        
+
         try {
             obj = smap.parse($in.val());
             $out.text(JSON.stringify(obj, null, 2));
@@ -13,9 +13,15 @@ $(function () {
             console.log(err);
             $out.text(err);
         }
-    }, 250));
+    }
 
-    $in.keyup();
+    _updater = _.debounce(update, 250);
+
+    $in.change(function () {
+        _updater();
+    });
+
+    $in.change();
 
     $("#version").text(smap.Version);
 });
