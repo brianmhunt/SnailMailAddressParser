@@ -24,6 +24,13 @@ class LineMatcher
 
     @rex = XRegExp("^#{expression}$", @options.rex_flags)
 
+  # return a list of names this could match
+  names: () ->
+    if @options._or
+      return "#{@name} or #{@options._or.names()}"
+    else
+      return @name
+
   # if the default is !is_optional, or unknown, one can use the optional() call
   # to get a copy of a LineMatcher that is optional (or mandatory, below)
   optional: () ->
@@ -36,7 +43,15 @@ class LineMatcher
     copy.options.is_optional = false
     return copy
 
-  is_optional: () -> @options.is_optional
+  #
+  # An argument is optional if it is, or any of its alternates are, optional
+  #
+  is_optional: () ->
+    if @options.is_optional
+      return true
+    if @options._or
+      return @options._or.is_optional()
+    return false
 
   #
   # `or` adds alternative matchers to this one, so we can say e.g.

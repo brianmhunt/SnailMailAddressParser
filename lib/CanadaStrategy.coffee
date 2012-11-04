@@ -175,11 +175,11 @@ class CanadaStrategy extends AddressStrategy
       "No PO",
     ]
 
-  STREET2 = new LineMatcher "Second street line",
-    "(?<street_name_2> .+)",
+  MORE_ADDR_INFO = new LineMatcher "Additional Address Anformation",
+    "(?<additional_address_info> .+)",
     valid_tests: {
       "Anything":
-        street_name_2: "Anything"
+        additional_address_info: "Anything"
     }, invalid_tests: [
       ""
     ]
@@ -252,7 +252,7 @@ class CanadaStrategy extends AddressStrategy
       care_of: ''
       street_number: ''
       street_name: ''
-      street_name_2: ''
+      additional_address_info: ''
       po_box: ''
       municipality: ''
       province: ''
@@ -265,31 +265,35 @@ class CanadaStrategy extends AddressStrategy
   #
   line_strategies: ->
     lms = new LineMatcherStrategy()
+
+    street = PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT).or(PO_BOX).or(SUITE)
+
     lms.add(ADDRESSEE.optional(),
             CARE_OF.optional(),
-            PLAIN_STREET,
-            SUITE,
+            street.optional(),
+            street,
             MUNICIPALITY, POSTAL)
 
     lms.add(ADDRESSEE.optional(),
             CARE_OF.optional(),
-            PLAIN_STREET,
-            SUITE,
+            street.optional(),
+            street,
             MUNICIPALITY_WITH_POSTAL)
 
-    # note: STREET2 can match anything Suite can.
-
-    lms.add(ADDRESSEE.optional(),
+    lms.add(ADDRESSEE,
+            MORE_ADDR_INFO.optional(),
             CARE_OF.optional(),
-            PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT).or(PO_BOX),
-            STREET2.optional(),
+            street.optional(),
+            street,
             MUNICIPALITY, POSTAL)
 
-    lms.add(ADDRESSEE.optional(),
+    lms.add(ADDRESSEE,
+            MORE_ADDR_INFO.optional(),
             CARE_OF.optional(),
-            PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT).or(PO_BOX),
-            STREET2.optional(),
+            street.optional(),
+            street,
             MUNICIPALITY_WITH_POSTAL)
+
 
     return lms.all()
 

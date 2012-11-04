@@ -893,6 +893,14 @@ LineMatcher = (function() {
     this.rex = XRegExp("^" + expression + "$", this.options.rex_flags);
   }
 
+  LineMatcher.prototype.names = function() {
+    if (this.options._or) {
+      return "" + this.name + " or " + (this.options._or.names());
+    } else {
+      return this.name;
+    }
+  };
+
   LineMatcher.prototype.optional = function() {
     var copy;
     copy = _.clone(this);
@@ -908,7 +916,13 @@ LineMatcher = (function() {
   };
 
   LineMatcher.prototype.is_optional = function() {
-    return this.options.is_optional;
+    if (this.options.is_optional) {
+      return true;
+    }
+    if (this.options._or) {
+      return this.options._or.is_optional();
+    }
+    return false;
   };
 
   LineMatcher.prototype.or = function(matcher) {
@@ -1020,10 +1034,14 @@ AddressStrategy = (function() {
       throw new Error(("Matcher expects " + matcher_array.length + " lines,") + (" but the address has " + addr_lines.length + " lines."));
     }
     _.each(matcher_array, function(line_strategy, index) {
-      var matches;
+      var matches, overlapping;
       matches = line_strategy.match(addr_lines[index]);
       if (matches === null) {
-        throw new Error("Line " + index + " is not a valid " + line_strategy.name);
+        throw new Error("Line " + index + " is not a " + (line_strategy.names()));
+      }
+      overlapping = _.intersection(result, matches);
+      if (!_.isEmpty(overlapping)) {
+        throw new Error("Overlapping elements: " + (inspect(overlapping)));
       }
       return _.extend(result, matches);
     });
@@ -1137,7 +1155,7 @@ var CanadaStrategy,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 CanadaStrategy = (function(_super) {
-  var ADDRESSEE, CARE_OF, MUNICIPALITY, MUNICIPALITY_WITH_POSTAL, PLAIN_STREET, POSTAL, PO_BOX, STREET2, STREET_UNIT, SUITE, UNIT_STREET, person_rex, provinces_list, street_rex, street_types, unit;
+  var ADDRESSEE, CARE_OF, MORE_ADDR_INFO, MUNICIPALITY, MUNICIPALITY_WITH_POSTAL, PLAIN_STREET, POSTAL, PO_BOX, STREET_UNIT, SUITE, UNIT_STREET, person_rex, provinces_list, street_rex, street_types, unit;
 
   __extends(CanadaStrategy, _super);
 
@@ -1231,10 +1249,10 @@ CanadaStrategy = (function(_super) {
     invalid_tests: ["No PO"]
   });
 
-  STREET2 = new LineMatcher("Second street line", "(?<street_name_2> .+)", {
+  MORE_ADDR_INFO = new LineMatcher("Additional Address Anformation", "(?<additional_address_info> .+)", {
     valid_tests: {
       "Anything": {
-        street_name_2: "Anything"
+        additional_address_info: "Anything"
       }
     },
     invalid_tests: [""]
@@ -1302,7 +1320,7 @@ CanadaStrategy = (function(_super) {
       care_of: '',
       street_number: '',
       street_name: '',
-      street_name_2: '',
+      additional_address_info: '',
       po_box: '',
       municipality: '',
       province: '',
@@ -1312,12 +1330,13 @@ CanadaStrategy = (function(_super) {
   };
 
   CanadaStrategy.prototype.line_strategies = function() {
-    var lms;
+    var lms, street;
     lms = new LineMatcherStrategy();
-    lms.add(ADDRESSEE.optional(), CARE_OF.optional(), PLAIN_STREET, SUITE, MUNICIPALITY, POSTAL);
-    lms.add(ADDRESSEE.optional(), CARE_OF.optional(), PLAIN_STREET, SUITE, MUNICIPALITY_WITH_POSTAL);
-    lms.add(ADDRESSEE.optional(), CARE_OF.optional(), PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT).or(PO_BOX), STREET2.optional(), MUNICIPALITY, POSTAL);
-    lms.add(ADDRESSEE.optional(), CARE_OF.optional(), PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT).or(PO_BOX), STREET2.optional(), MUNICIPALITY_WITH_POSTAL);
+    street = PLAIN_STREET.or(UNIT_STREET).or(STREET_UNIT).or(PO_BOX).or(SUITE);
+    lms.add(ADDRESSEE.optional(), CARE_OF.optional(), street.optional(), street, MUNICIPALITY, POSTAL);
+    lms.add(ADDRESSEE.optional(), CARE_OF.optional(), street.optional(), street, MUNICIPALITY_WITH_POSTAL);
+    lms.add(ADDRESSEE, MORE_ADDR_INFO.optional(), CARE_OF.optional(), street.optional(), street, MUNICIPALITY, POSTAL);
+    lms.add(ADDRESSEE, MORE_ADDR_INFO.optional(), CARE_OF.optional(), street.optional(), street, MUNICIPALITY_WITH_POSTAL);
     return lms.all();
   };
 

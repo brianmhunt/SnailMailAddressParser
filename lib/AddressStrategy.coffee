@@ -63,7 +63,18 @@ class AddressStrategy
       matches = line_strategy.match(addr_lines[index])
 
       if matches == null
-        throw new Error("Line #{index} is not a valid #{line_strategy.name}")
+        throw new Error("Line #{index} is not a #{line_strategy.names()}")
+
+      # each line should assign to unique elements
+      # e.g.
+      #     Suite 100 - 50 Wallaby Lane
+      #     Unit #125
+      # is not a valid address because suite matches on both the first and
+      # second lines
+      overlapping = _.intersection(result, matches)
+
+      if not _.isEmpty(overlapping)
+        throw new Error("Overlapping elements: #{inspect overlapping}")
 
       _.extend(result, matches)
       # _.each matches, (key) -> result[key] = matches[key]
@@ -84,6 +95,7 @@ class AddressStrategy
         return false
       return results != null
     )
+
     return results
 
   debug_line_strategies: (strategies, addr_lines) ->

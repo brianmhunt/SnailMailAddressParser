@@ -143,6 +143,7 @@ _parsed_object_test = (parsed, expected) ->
       assert _.has(parsed, 'matches')
 
     matches = parsed.matches
+    is_equal = true
     
     if _.isObject expected
       it "has only one match", ->
@@ -164,6 +165,10 @@ _parsed_object_test = (parsed, expected) ->
           assert.fail("the parsed matches do not have #{key}")
           return
 
+        if match[key].toString() != value.toString()
+          console.log "parsed result is actually \"#{match[key]}\"."
+          is_equal = false
+
         assert.equal(match[key], value)
 
     it "has no extra keys", () ->
@@ -171,6 +176,8 @@ _parsed_object_test = (parsed, expected) ->
       assert(_.isEmpty(parsed_only_keys),
         "Parsed matches contains \"#{parsed_only_keys}\" keys, "+
         "but 'twas not expected.")
+  
+    # console.log "Actual match #{inspect match}"
 
   return # _parsed_object_test
 

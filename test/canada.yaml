@@ -16,7 +16,7 @@ addresses:
     country: Canada
     street_number: 100
     street_name: Bay Street
-    street_name_2: 
+    additional_address_info:
     po_box: 
     addressee: 
     suite: Unit no. 67468
@@ -33,7 +33,7 @@ addresses:
     country: Canada
     street_number: 100
     street_name: Bay Street
-    street_name_2:
+    additional_address_info:
     addressee: Mr. Incognito
     suite: 
     po_box: 
@@ -53,7 +53,7 @@ addresses:
     country: Canada
     street_number: 100
     street_name: Bay Street
-    street_name_2:
+    additional_address_info:
     addressee: Mr. Incognito
     po_box: 
     suite: 221
@@ -68,12 +68,12 @@ addresses:
     Canada
   expect:
     municipality: Bras d'Or
+    additional_address_info:
     province: British Columbia
     postal: M5H 1T1
     country: Canada
     street_number: 100
     street_name: Bay Street
-    street_name_2:
     addressee: Mr. Incognito
     suite: "# 221"
     po_box: 
@@ -81,17 +81,17 @@ addresses:
 
 - given: |
     John Dear
-    P.O. Box 13005
     Manatee Sq. Postal Outlet
+    P.O. Box 13005
     St. John's, MB, F9A 2X9
   expect:
     municipality: St. John's
     province: MB
+    additional_address_info: Manatee Sq. Postal Outlet
     country: Canada
     postal: F9A 2X9
     street_number:
-    street_name:
-    street_name_2: Manatee Sq. Postal Outlet
+    street_name: 
     addressee: John Dear
     suite:
     po_box: P.O. Box 13005
