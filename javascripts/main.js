@@ -15,13 +15,13 @@ $(function () {
         }
     }
 
-    _updater = _.debounce(update, 250);
+    _updater = _.debounce(update, 350);
 
-    $in.change(function () {
+    $in.keyup(function () {
         _updater();
     });
 
-    $in.change();
+    $in.keyup();
 
     $("#version").text(smap.Version);
 });
