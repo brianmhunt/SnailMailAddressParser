@@ -20,7 +20,7 @@ define(['underscore', 'xregexp'], function (_, xregexp) {
   var XRegExp = xregexp.XRegExp, VERSION;
   XRegExp.addUnicodePackage();
 /*  ---- Begin AMD content ---- */
-VERSION = "0.1.19";
+VERSION = "0.1.20-beta";
 // -- from: lib/Debug.coffee -- \\
 /*
 #
@@ -1138,7 +1138,7 @@ var CanadaStrategy,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 CanadaStrategy = (function(_super) {
-  var ADDRESSEE, CARE_OF, MUNICIPALITY, MUNICIPALITY_WITH_POSTAL, PLAIN_STREET, POSTAL, PO_BOX, STREET2, STREET_UNIT, SUITE, UNIT_STREET, person_rex, provinces_list, street_rex, unit;
+  var ADDRESSEE, CARE_OF, MUNICIPALITY, MUNICIPALITY_WITH_POSTAL, PLAIN_STREET, POSTAL, PO_BOX, STREET2, STREET_UNIT, SUITE, UNIT_STREET, person_rex, provinces_list, street_rex, street_types, unit;
 
   __extends(CanadaStrategy, _super);
 
@@ -1149,6 +1149,8 @@ CanadaStrategy = (function(_super) {
   CanadaStrategy.prototype.name = 'canada';
 
   provinces_list = ["AB", "Alberta", "BC", "British\\s+Columbia", "Manitoba", "MB", "New Brunswick", "NB", "Newfoundland\\s+and\\s+Labrador", "Newfoundland", "NF", "NL", "Newfoundland\\s+&\\s+Labrador", "Northwest Territories", "NT", "Nova Scotia", "NS", "Nunavut", "NU", "ON", "Ontario", "Prince\\s+Edward\\s+Island", "PE", "PEI", "Quebec", "QC", "Saskatchewan", "SK", "Yukon", "YT"];
+
+  street_types = ["Abbey", "ABBEY", "Acres", "ACRES", "Alley", "ALLEY", "Autoroute", "AUT", "Avenue", "AVE", "Avenue", "AV", "Bay", "BAY", "Beach", "BEACH", "Bend", "BEND", "Boulevard", "BLVD", "Boulevard", "BOUL", "building", "By-pass", "BYPASS", "Byway", "BYWAY", "Campus", "CAMPUS", "Cape", "CAPE", "CAR", "Carrefour", "CARREF", "Centre", "CTR", "Centre", "C", "Cercle", "CERCLE", "Chase", "CHASE", "Chemin", "CH", "Circle", "CIR", "Circuit", "CIRCT", "Close", "CLOSE", "Common", "COMMON", "Concession", "CONC", "Corners", "CRNRS", "Cour", "COUR", "Cours", "COURS", "Court", "CRT", "Cove", "COVE", "Crescent", "CRES", "Croissant", "CROIS", "Crossing", "CROSS", "Cul-de-sac", "CDS", "Dale", "DALE", "Dell", "DELL", "Diversion", "DIVERS", "Downs", "DOWNS", "Drive", "DR", "End", "END", "Esplanade", "ESPL", "Estates", "ESTATE", "Expressway", "EXPY", "Extension", "EXTEN", "Farm", "FARM", "Field", "FIELD", "Forest", "FOREST", "Freeway", "FWY", "Front", "FRONT", "Gardens", "GDNS", "Gate", "GATE", "Glade", "GLADE", "Glen", "GLEN", "Green", "GREEN", "Grounds", "GRNDS", "Grove", "GROVE", "Harbour", "HARBR", "Heath", "HEATH", "Heights", "HTS", "Highlands", "HGHLDS", "Highway", "HWY", "Hill", "HILL", "Hollow", "HOLLOW", "Impasse", "IMP", "Inlet", "INLET", "Island", "ISLAND", "Key", "KEY", "Knoll", "KNOLL", "Landing", "LANDNG", "Lane", "LANE", "Limits", "LMTS", "Line", "LINE", "Link", "LINK", "Lookout", "LKOUT", "Loop", "LOOP", "Mall", "MALL", "Manor", "MANOR", "Maze", "MAZE", "Meadow", "MEADOW", "Mews", "MEWS", "Moor", "MOOR", "Mount", "MOUNT", "Mountain", "MTN", "Orchard", "ORCH", "Parade", "PARADE", "Parc", "PARC", "Park", "PK", "Parkway", "PKY", "Passage", "PASS", "Path", "PATH", "Pathway", "PTWAY", "Pines", "PINES", "Place", "PL", "Place", "PLACE", "Plateau", "PLAT", "Plaza", "PLAZA", "Point", "PT", "Pointe", "POINTE", "Port", "PORT", "Private", "PVT", "Promenade", "PROM", "Quai", "QUAI", "Quay", "QUAY", "Ramp", "RAMP", "Rang", "RANG", "Range", "RG", "Ridge", "RIDGE", "Rise", "RISE", "Road", "RD", "Rond-point", "RDPT", "Route", "RTE", "Row", "ROW", "Rue", "RUE", "Ruelle", "RLE", "Run", "RUN", "Sentier", "SENT", "Square", "SQ", "Street", "ST", "Subdivision", "SUBDIV", "Terrace", "TERR", "Terrasse", "TSSE", "Thicket", "THICK", "Towers", "TOWERS", "Townline", "TLINE", "Trail", "TRAIL", "Turnabout", "TRNABT", "Vale", "VALE", "Via", "VIA", "View", "VIEW", "Village", "VILLGE", "Villas", "VILLAS", "Vista", "VISTA", "Voie", "VOIE", "Walk", "WALK", "Way", "WAY", "Wharf", "WHARF", "Wood", "WOOD", "Wynd", "WYND"];
 
   person_rex = "(?: \\p{L} | [\\s\\-\\.])+ ";
 
@@ -1170,7 +1172,7 @@ CanadaStrategy = (function(_super) {
     invalid_tests: ["no c/o? fine. be that way."]
   });
 
-  street_rex = "(?<street_number> \\d+)? \\s+\n(?<street_name> (?: \\p{L}|[\\.\\s\\-'])+? )";
+  street_rex = "(?:\n  (?<street_number> \\d+) \\s+\n   (?<street_name> (?: \\p{L}|[\\.\\s\\-'])+? )\n|\n  (?<street_name>\n    (?: \\p{L} | [\\.\\s\\-'])+     # street name\n    (?: " + (street_types.join("|")) + ")  # street type\n    (?: \\w+)                      # (short) north/east/west/etc\n  )\n)";
 
   PLAIN_STREET = new LineMatcher("Plain street", street_rex, {
     valid_tests: {
@@ -1183,12 +1185,12 @@ CanadaStrategy = (function(_super) {
         street_name: "Hûntley Street"
       }
     },
-    invalid_tests: ["Wallaby Lane", "Suite 100, 42 Wallaby Lane", "42 Wallaby Lane, fl. 2-00"]
+    invalid_tests: ["Wallaby 12 Lane", "Suite 100, 42 Wallaby Lane", "42 Wallaby Lane, fl. 2-00"]
   });
 
-  unit = "(?: apt\\.? | apartment | unit | suite | floor | fl\\.?\n  | app     | bureau | ) \\s* (?: [#] | no\\.? | number \s+ )? \\s*";
+  unit = "(?:\n  (?:\n    (?: apt\\.? | apartment | unit | suite | floor | fl\\.? | app | bureau )\n      \\s* (?: \\s [#] | no\\.? | number \s+ )?\n    | [#]\n    | no\\.\n  )\n  \\s*\n    [\\d\\w]+\n|\n  [\\d\\w]+\n  \\s*\n  (?: floor | fl\\. )\n)";
 
-  UNIT_STREET = new LineMatcher("Unit - Street", "(?<suite> [^-]+?) \\s* [\\-,] \\s* " + street_rex, {
+  UNIT_STREET = new LineMatcher("Unit - Street", "(?<suite> " + unit + ") \\s* [\\-,\\s] \\s* " + street_rex, {
     valid_tests: {
       "Suite 1100a - 42 Wallaby Ave.": {
         suite: "Suite 1100a",
@@ -1199,7 +1201,7 @@ CanadaStrategy = (function(_super) {
     invalid_tests: ["100 Wish Line, Unit #212", "Any street with no unit"]
   });
 
-  STREET_UNIT = new LineMatcher("Street - Unit", "" + street_rex + " \\s* [,\\-]? \\s* (?<suite> " + unit + " [\\d\\w]+)", {
+  STREET_UNIT = new LineMatcher("Street - Unit", "" + street_rex + " \\s* [,\\-]? \\s* (?<suite> " + unit + ")", {
     valid_tests: {
       "42 Wallaby Ave., Suite 1100A": {
         suite: "Suite 1100A",
@@ -1210,9 +1212,14 @@ CanadaStrategy = (function(_super) {
         suite: "#115",
         street_number: "1",
         street_name: "Rainy Road"
+      },
+      "Beothuk Building, 4th Floor": {
+        street_number: void 0,
+        street_name: "Beothuk Building",
+        suite: "4th Floor"
       }
     },
-    invalid_tests: ["100 100 100", "Any street with no unit"]
+    invalid_tests: ["100 100 100", "Any street without a given unit"]
   });
 
   PO_BOX = new LineMatcher("Post Office Box", "(?<po_box>P\\.?\\s* O\\.?\\s* BOX \\s* \\s* \\d+ \\s* ,? \\s*\n(?: (?:stn\\.?|station|rpo\\.?|rr\\.?) \\s* \\w+)? )", {
@@ -1239,7 +1246,7 @@ CanadaStrategy = (function(_super) {
     invalid_tests: [""]
   });
 
-  SUITE = new LineMatcher("Suite number", "(?<suite> " + unit + " [\\d\\w]+)", {
+  SUITE = new LineMatcher("Suite number", "(?<suite> " + unit + ")", {
     valid_tests: {
       'Suite # 1024': {
         suite: 'Suite # 1024'

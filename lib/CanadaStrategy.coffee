@@ -29,6 +29,46 @@ class CanadaStrategy extends AddressStrategy
     "Yukon", "YT",
   ]
 
+  # non-exhaustive list of street types
+  street_types = [
+    "Abbey", "ABBEY", "Acres", "ACRES", "Alley", "ALLEY", "Autoroute", "AUT",
+    "Avenue", "AVE", "Avenue", "AV", "Bay", "BAY", "Beach", "BEACH", "Bend",
+    "BEND", "Boulevard", "BLVD", "Boulevard", "BOUL", "building", "By-pass",
+    "BYPASS", "Byway", "BYWAY", "Campus", "CAMPUS", "Cape", "CAPE", "CAR",
+    "Carrefour", "CARREF", "Centre", "CTR", "Centre", "C", "Cercle", "CERCLE",
+    "Chase", "CHASE", "Chemin", "CH", "Circle", "CIR", "Circuit", "CIRCT",
+    "Close", "CLOSE", "Common", "COMMON", "Concession", "CONC", "Corners",
+    "CRNRS", "Cour", "COUR", "Cours", "COURS", "Court", "CRT", "Cove", "COVE",
+    "Crescent", "CRES", "Croissant", "CROIS", "Crossing", "CROSS",
+    "Cul-de-sac", "CDS", "Dale", "DALE", "Dell", "DELL", "Diversion", "DIVERS",
+    "Downs", "DOWNS", "Drive", "DR", "End", "END", "Esplanade", "ESPL",
+    "Estates", "ESTATE", "Expressway", "EXPY", "Extension", "EXTEN", "Farm",
+    "FARM", "Field", "FIELD", "Forest", "FOREST", "Freeway", "FWY", "Front",
+    "FRONT", "Gardens", "GDNS", "Gate", "GATE", "Glade", "GLADE", "Glen",
+    "GLEN", "Green", "GREEN", "Grounds", "GRNDS", "Grove", "GROVE", "Harbour",
+    "HARBR", "Heath", "HEATH", "Heights", "HTS", "Highlands", "HGHLDS",
+    "Highway", "HWY", "Hill", "HILL", "Hollow", "HOLLOW", "Impasse", "IMP",
+    "Inlet", "INLET", "Island", "ISLAND", "Key", "KEY", "Knoll", "KNOLL",
+    "Landing", "LANDNG", "Lane", "LANE", "Limits", "LMTS", "Line", "LINE",
+    "Link", "LINK", "Lookout", "LKOUT", "Loop", "LOOP", "Mall", "MALL",
+    "Manor", "MANOR", "Maze", "MAZE", "Meadow", "MEADOW", "Mews", "MEWS",
+    "Moor", "MOOR", "Mount", "MOUNT", "Mountain", "MTN", "Orchard", "ORCH",
+    "Parade", "PARADE", "Parc", "PARC", "Park", "PK", "Parkway", "PKY",
+    "Passage", "PASS", "Path", "PATH", "Pathway", "PTWAY", "Pines", "PINES",
+    "Place", "PL", "Place", "PLACE", "Plateau", "PLAT", "Plaza", "PLAZA",
+    "Point", "PT", "Pointe", "POINTE", "Port", "PORT", "Private", "PVT",
+    "Promenade", "PROM", "Quai", "QUAI", "Quay", "QUAY", "Ramp", "RAMP",
+    "Rang", "RANG", "Range", "RG", "Ridge", "RIDGE", "Rise", "RISE", "Road",
+    "RD", "Rond-point", "RDPT", "Route", "RTE", "Row", "ROW", "Rue", "RUE",
+    "Ruelle", "RLE", "Run", "RUN", "Sentier", "SENT", "Square", "SQ", "Street",
+    "ST", "Subdivision", "SUBDIV", "Terrace", "TERR", "Terrasse", "TSSE",
+    "Thicket", "THICK", "Towers", "TOWERS", "Townline", "TLINE", "Trail",
+    "TRAIL", "Turnabout", "TRNABT", "Vale", "VALE", "Via", "VIA", "View",
+    "VIEW", "Village", "VILLGE", "Villas", "VILLAS", "Vista", "VISTA", "Voie",
+    "VOIE", "Walk", "WALK", "Way", "WAY", "Wharf", "WHARF", "Wood", "WOOD",
+    "Wynd", "WYND",
+  ]
+
   person_rex = "(?: \\p{L} | [\\s\\-\\.])+ "
 
   ADDRESSEE = new LineMatcher("Addressee",
@@ -51,8 +91,16 @@ class CanadaStrategy extends AddressStrategy
     ]
 
   street_rex = """
-   (?<street_number> \\d+)? \\s+
-   (?<street_name> (?: \\p{L}|[\\.\\s\\-'])+? )
+    (?:
+      (?<street_number> \\d+) \\s+
+       (?<street_name> (?: \\p{L}|[\\.\\s\\-'])+? )
+    |
+      (?<street_name>
+        (?: \\p{L} | [\\.\\s\\-'])+     # street name
+        (?: #{street_types.join("|")})  # street type
+        (?: \\w+)                      # (short) north/east/west/etc
+      )
+    )
   """
 
   PLAIN_STREET = new LineMatcher "Plain street",
@@ -65,18 +113,30 @@ class CanadaStrategy extends AddressStrategy
         street_number: "100"
         street_name: "Hûntley Street"
     }, invalid_tests: [
-      "Wallaby Lane",
+      "Wallaby 12 Lane",
       "Suite 100, 42 Wallaby Lane",
       "42 Wallaby Lane, fl. 2-00",
     ]
-  
+
   unit = """
-    (?: apt\\.? | apartment | unit | suite | floor | fl\\.?
-      | app     | bureau | ) \\s* (?: [#] | no\\.? | number \s+ )? \\s*
+    (?:
+      (?:
+        (?: apt\\.? | apartment | unit | suite | floor | fl\\.? | app | bureau )
+          \\s* (?: \\s [#] | no\\.? | number \s+ )?
+        | [#]
+        | no\\.
+      )
+      \\s*
+        [\\d\\w]+
+    |
+      [\\d\\w]+
+      \\s*
+      (?: floor | fl\\. )
+    )
   """
 
   UNIT_STREET = new LineMatcher "Unit - Street",
-     "(?<suite> [^-]+?) \\s* [\\-,] \\s* #{street_rex}",
+     "(?<suite> #{unit}) \\s* [\\-,\\s] \\s* #{street_rex}",
      valid_tests: {
        "Suite 1100a - 42 Wallaby Ave.":
          suite: "Suite 1100a"
@@ -88,7 +148,7 @@ class CanadaStrategy extends AddressStrategy
      ]
 
   STREET_UNIT = new LineMatcher "Street - Unit",
-     "#{street_rex} \\s* [,\\-]? \\s* (?<suite> #{unit} [\\d\\w]+)",
+     "#{street_rex} \\s* [,\\-]? \\s* (?<suite> #{unit})",
      valid_tests: {
        "42 Wallaby Ave., Suite 1100A":
          suite: "Suite 1100A"
@@ -98,9 +158,13 @@ class CanadaStrategy extends AddressStrategy
          suite: "#115"
          street_number: "1"
          street_name: "Rainy Road"
+       "Beothuk Building, 4th Floor":
+         street_number: undefined
+         street_name: "Beothuk Building"
+         suite: "4th Floor"
      }, invalid_tests: [
         "100 100 100",
-        "Any street with no unit"
+        "Any street without a given unit"
      ]
 
   PO_BOX = new LineMatcher "Post Office Box",
@@ -128,7 +192,7 @@ class CanadaStrategy extends AddressStrategy
     ]
 
   SUITE = new LineMatcher "Suite number",
-    "(?<suite> #{unit} [\\d\\w]+)",
+    "(?<suite> #{unit})",
     valid_tests: {
       'Suite # 1024':
         suite: 'Suite # 1024'
