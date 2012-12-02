@@ -126,7 +126,7 @@ class AddressStrategy
   # Address_string is provided as a backup, in case a 'lines' strategy is not
   # workable.
   #
-  parse_address: (lines, address_string) ->
+  parse_address: (lines, address_string, debug=false) ->
     if lines.length < 2
       throw new Error("Addresses must be at least two lines.")
 
@@ -136,7 +136,10 @@ class AddressStrategy
 
     # TODO: check if we are in debug mode, and only dump this info when we are
     if _.isEmpty(results)
-      @debug_line_strategies(line_strats, lines)
+      if debug
+        @debug_line_strategies(line_strats, lines)
+      else
+        throw new Error("This address does not match a known format.")
     
     return _.defaults(results, @expected_fields())
 

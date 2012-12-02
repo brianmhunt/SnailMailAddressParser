@@ -24,7 +24,7 @@ define(['underscore', 'xregexp'], function (_, xregexp) {
       XRegExp.addUnicodePackage();
   }
 /*  ---- Begin AMD content ---- */
-VERSION = "0.1.22";
+VERSION = "0.1.23";
 // -- from: lib/Debug.coffee -- \\
 /*
 #
@@ -1087,15 +1087,22 @@ AddressStrategy = (function() {
     });
   };
 
-  AddressStrategy.prototype.parse_address = function(lines, address_string) {
+  AddressStrategy.prototype.parse_address = function(lines, address_string, debug) {
     var line_strats, results;
+    if (debug == null) {
+      debug = false;
+    }
     if (lines.length < 2) {
       throw new Error("Addresses must be at least two lines.");
     }
     line_strats = this.line_strategies() || [];
     results = this.run_line_strategies(line_strats, lines) || {};
     if (_.isEmpty(results)) {
-      this.debug_line_strategies(line_strats, lines);
+      if (debug) {
+        this.debug_line_strategies(line_strats, lines);
+      } else {
+        throw new Error("This address does not match a known format.");
+      }
     }
     return _.defaults(results, this.expected_fields());
   };
