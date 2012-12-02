@@ -17,10 +17,14 @@ if (typeof require !== 'function') {
 }
 
 define(['underscore', 'xregexp'], function (_, xregexp) {
-  var XRegExp = xregexp.XRegExp, VERSION;
-  XRegExp.addUnicodePackage();
+  var XRegExp, VERSION;
+  XRegExp = xregexp.XRegExp ? xregexp.XRegExp : xregexp;
+  if (_.isFunction(XRegExp.addUnicodePackage)) {
+      // for XRegExp 2.0
+      XRegExp.addUnicodePackage();
+  }
 /*  ---- Begin AMD content ---- */
-VERSION = "0.1.20-beta";
+VERSION = "0.1.22";
 // -- from: lib/Debug.coffee -- \\
 /*
 #
