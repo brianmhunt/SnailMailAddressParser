@@ -1,10 +1,10 @@
 {
   "name": "snailmailaddressparser",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "description": "A Javascript library to parse snail mail addresses into components",
   "author": "Brian M Hunt <brianmhunt@gmail.com>",
   "dependencies": {
-    "underscore": ">= 1.4",
+    "lodash": ">= 1.0.0-rc.2",
     "xregexp": ">= 2.0.0",
     "amdefine": ">= 0.0.2"
   },

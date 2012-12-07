@@ -34,12 +34,12 @@ class LineMatcher
   # if the default is !is_optional, or unknown, one can use the optional() call
   # to get a copy of a LineMatcher that is optional (or mandatory, below)
   optional: () ->
-    copy = _.clone(@)
+    copy = @clone()
     copy.options.is_optional = true
     return copy
 
   mandatory: () ->
-    copy = _.clone(@)
+    copy = @clone()
     copy.options.is_optional = false
     return copy
 
@@ -52,6 +52,12 @@ class LineMatcher
     if @options._or
       return @options._or.is_optional()
     return false
+
+  #
+  # Return a copy of this LineMatcher
+  #
+  clone: () -> new LineMatcher(@name, @expression, @options)
+
 
   #
   # `or` adds alternative matchers to this one, so we can say e.g.
@@ -74,7 +80,7 @@ class LineMatcher
       # i.e. STREET.or(UNIT_STREET)
       # should not mean that subsequent uses of STREET should also match
       # UNIT_STREET
-      lm = _.clone(@)
+      lm = @clone()
       lm.options._or = matcher
 
     # return this, so these can be chained ie

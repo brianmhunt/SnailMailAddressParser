@@ -21,7 +21,7 @@
 {log} = require 'util'
 fs = require 'fs'
 glob = require 'glob'
-_ = require 'underscore'
+_ = require 'lodash'
 coffee = require 'coffee-script'
 
 MOCHA_CMD = './node_modules/mocha/bin/mocha'
@@ -45,7 +45,7 @@ DEST='build/snailmailaddressparser'
 # It should also work with RequireJS.
 # In future it should "just work" in other sensible cases.
 #
-# TODO: check for global "_" (underscore)
+# TODO: check for global "_" (lodash)
 LEADER = """
 if (typeof require !== 'function') {
     // browser w/o dependency checking
@@ -53,7 +53,7 @@ if (typeof require !== 'function') {
         console.log("No XRegExp object found - is it installed?.")
     }
     if (typeof _ !== 'function') {
-        console.log("Underscore or lodash were not found. Is one installed?")
+        console.log("lodash was not found. Is it installed?")
     }
 
     var define = function (deps, foo) {
@@ -65,7 +65,7 @@ if (typeof require !== 'function') {
     }
 }
 
-define(['underscore', 'xregexp'], function (_, xregexp) {
+define(['lodash', 'xregexp'], function (_, xregexp) {
   var XRegExp, VERSION;
   XRegExp = xregexp.XRegExp ? xregexp.XRegExp : xregexp;
   if (_.isFunction(XRegExp.addUnicodePackage)) {

@@ -4,7 +4,7 @@ if (typeof require !== 'function') {
         console.log("No XRegExp object found - is it installed?.")
     }
     if (typeof _ !== 'function') {
-        console.log("Underscore or lodash were not found. Is one installed?")
+        console.log("lodash was not found. Is it installed?")
     }
 
     var define = function (deps, foo) {
@@ -16,7 +16,7 @@ if (typeof require !== 'function') {
     }
 }
 
-define(['underscore', 'xregexp'], function (_, xregexp) {
+define(['lodash', 'xregexp'], function (_, xregexp) {
   var XRegExp, VERSION;
   XRegExp = xregexp.XRegExp ? xregexp.XRegExp : xregexp;
   if (_.isFunction(XRegExp.addUnicodePackage)) {
@@ -24,7 +24,7 @@ define(['underscore', 'xregexp'], function (_, xregexp) {
       XRegExp.addUnicodePackage();
   }
 /*  ---- Begin AMD content ---- */
-VERSION = "0.1.23";
+VERSION = "0.1.24";
 // -- from: lib/Debug.coffee -- \\
 /*
 #
@@ -907,14 +907,14 @@ LineMatcher = (function() {
 
   LineMatcher.prototype.optional = function() {
     var copy;
-    copy = _.clone(this);
+    copy = this.clone();
     copy.options.is_optional = true;
     return copy;
   };
 
   LineMatcher.prototype.mandatory = function() {
     var copy;
-    copy = _.clone(this);
+    copy = this.clone();
     copy.options.is_optional = false;
     return copy;
   };
@@ -929,6 +929,10 @@ LineMatcher = (function() {
     return false;
   };
 
+  LineMatcher.prototype.clone = function() {
+    return new LineMatcher(this.name, this.expression, this.options);
+  };
+
   LineMatcher.prototype.or = function(matcher) {
     var lm;
     lm = this;
@@ -938,7 +942,7 @@ LineMatcher = (function() {
       }
       this.options._or = this.options._or.or(matcher);
     } else {
-      lm = _.clone(this);
+      lm = this.clone();
       lm.options._or = matcher;
     }
     return lm;

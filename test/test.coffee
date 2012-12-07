@@ -1,7 +1,7 @@
 #
 # Test the basic functionality
 #
-_ = require('underscore'); chai = require('chai')
+_ = require('lodash'); chai = require('chai')
 {log, error, inspect} = require('util'); fs = require('fs')
 path = require('path'); yaml = require('js-yaml')
 assert = chai.assert; expect = chai.expect; should = chai.should()

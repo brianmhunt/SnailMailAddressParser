@@ -83,7 +83,6 @@ or `build/snailmailaddressparser.min.js` to your project and include it in your
 project with eg the RequireJS `require('snailmailaddressparser')`.
 
 - [lodash](https://github.com/bestiejs/lodash) 
-  or [underscore](http://underscorejs.org/)
 - [XRegExp](http://xregexp.com/)
 - AMD eg [requirejs](http://requirejs.org/) and `require('snailmailaddressparser')`
   or `<script src='snailmailaddressparser.js'></script>` tag
