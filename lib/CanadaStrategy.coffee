@@ -294,7 +294,6 @@ class CanadaStrategy extends AddressStrategy
             street,
             MUNICIPALITY_WITH_POSTAL)
 
-
     return lms.all()
 
 new CanadaStrategy().register()

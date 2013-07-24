@@ -1,24 +1,21 @@
-if (typeof require !== 'function') {
-    // browser w/o dependency checking
-    if (typeof XRegExp !== 'function') {
-        console.log("No XRegExp object found - is it installed?.")
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(['simplemailaddressparser'], factory);
+    } else {
+        // Browser globals
+        root.simplemailaddressparser = factory(root.simplemailaddressparser);
     }
-    if (typeof _ !== 'function') {
-        console.log("lodash was not found. Is it installed?")
-    }
+}(this, function() {
+  var _, XRegExp, _xregexp, VERSION;
 
-    var define = function (deps, foo) {
-        window.snailmailaddressparser = foo(_, {XRegExp: XRegExp});
-    }
-} else {
-    if (typeof define !== 'function') {
-        var define = require('amdefine')(module);
-    }
-}
+  /* Require these as necessary; the may be defined on the global object. */
+  if (typeof require === 'function') {
+    _ = require('lodash'); // underscore?
+    _xregexp = require('xregexp')
+    XRegExp = _xregexp.XRegExp ? _xregexp.XRegExp : _xregexp;
+  }
 
-define(['lodash', 'xregexp'], function (_, xregexp) {
-  var XRegExp, VERSION;
-  XRegExp = xregexp.XRegExp ? xregexp.XRegExp : xregexp;
   if (_.isFunction(XRegExp.addUnicodePackage)) {
       // for XRegExp 2.0
       XRegExp.addUnicodePackage();
@@ -840,7 +837,6 @@ var LineMatcherStrategy,
   __slice = [].slice;
 
 LineMatcherStrategy = (function() {
-
   function LineMatcherStrategy() {
     this._list = [];
   }
@@ -880,7 +876,6 @@ var LineMatcher,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 LineMatcher = (function() {
-
   function LineMatcher(name, expression, options) {
     this.name = name;
     this.expression = expression;
@@ -1007,15 +1002,14 @@ var AddressStrategy,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 AddressStrategy = (function() {
-
   function AddressStrategy() {}
 
   AddressStrategy._registered_strategies = {};
 
   /*
-     * Register this subclass as a strategy
-     * Maps @name to the subclass calling register (@name is the canonical
-     * iso3166 name)
+   * Register this subclass as a strategy
+   * Maps @name to the subclass calling register (@name is the canonical
+   * iso3166 name)
   */
 
 
@@ -1061,9 +1055,11 @@ AddressStrategy = (function() {
       _this = this;
     results = null;
     _.any(strategies, function(strat, index) {
+      var err;
       try {
         results = _this.run_rex_line_strategy(strat, addr_lines);
-      } catch (err) {
+      } catch (_error) {
+        err = _error;
         return false;
       }
       return results !== null;
@@ -1079,13 +1075,14 @@ AddressStrategy = (function() {
     }).join("\n");
     console.log("\n** Debugging:\n" + addr_str);
     return _.each(strategies, function(strat, index) {
-      var results;
+      var err, results;
       if (strat.length !== addr_lines.length) {
         return;
       }
       try {
         return results = _this.run_rex_line_strategy(strat, addr_lines);
-      } catch (err) {
+      } catch (_error) {
+        err = _error;
         return console.log("Rex failed: " + err);
       }
     });
@@ -1165,7 +1162,7 @@ AddressStrategy.do_parse_address = function(addr_string, options) {
 #
 */
 
-var CanadaStrategy,
+var CanadaStrategy, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1175,7 +1172,8 @@ CanadaStrategy = (function(_super) {
   __extends(CanadaStrategy, _super);
 
   function CanadaStrategy() {
-    return CanadaStrategy.__super__.constructor.apply(this, arguments);
+    _ref = CanadaStrategy.__super__.constructor.apply(this, arguments);
+    return _ref;
   }
 
   CanadaStrategy.prototype.name = 'canada';
@@ -1366,7 +1364,6 @@ new CanadaStrategy().register();
 var SnailMailAddressParser;
 
 SnailMailAddressParser = (function() {
-
   SnailMailAddressParser.prototype.AddressStrategy = AddressStrategy;
 
   SnailMailAddressParser.prototype.LineMatcher = LineMatcher;
@@ -1392,4 +1389,4 @@ SnailMailAddressParser = (function() {
 })();
 /*  ---- End AMD content ---- */
   return new SnailMailAddressParser();
-});
+}));

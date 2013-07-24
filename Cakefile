@@ -41,33 +41,28 @@ COFFEE_SRC = [
 
 DEST='build/snailmailaddressparser'
 
-# The following uses `amdefine` for AMD support on Node.js
-# It should also work with RequireJS.
-# In future it should "just work" in other sensible cases.
 #
-# TODO: check for global "_" (lodash)
+#  UMD amdWeb https://github.com/umdjs/umd/blob/master/amdWeb.js
+#
 LEADER = """
-if (typeof require !== 'function') {
-    // browser w/o dependency checking
-    if (typeof XRegExp !== 'function') {
-        console.log("No XRegExp object found - is it installed?.")
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(['simplemailaddressparser'], factory);
+    } else {
+        // Browser globals
+        root.simplemailaddressparser = factory(root.simplemailaddressparser);
     }
-    if (typeof _ !== 'function') {
-        console.log("lodash was not found. Is it installed?")
-    }
+}(this, function() {
+  var _, XRegExp, _xregexp, VERSION;
 
-    var define = function (deps, foo) {
-        window.snailmailaddressparser = foo(_, {XRegExp: XRegExp});
-    }
-} else {
-    if (typeof define !== 'function') {
-        var define = require('amdefine')(module);
-    }
-}
+  /* Require these as necessary; the may be defined on the global object. */
+  if (typeof require === 'function') {
+    _ = require('lodash'); // underscore?
+    _xregexp = require('xregexp')
+    XRegExp = _xregexp.XRegExp ? _xregexp.XRegExp : _xregexp;
+  }
 
-define(['lodash', 'xregexp'], function (_, xregexp) {
-  var XRegExp, VERSION;
-  XRegExp = xregexp.XRegExp ? xregexp.XRegExp : xregexp;
   if (_.isFunction(XRegExp.addUnicodePackage)) {
       // for XRegExp 2.0
       XRegExp.addUnicodePackage();
@@ -77,7 +72,7 @@ define(['lodash', 'xregexp'], function (_, xregexp) {
 FOOTER = """
 /*  ---- End AMD content ---- */
   return new SnailMailAddressParser();
-});
+}));
 """
 
 option '-g', '--grep [GREP]', 'pass "-g TEST" to Mocha'

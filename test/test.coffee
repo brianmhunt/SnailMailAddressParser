@@ -6,7 +6,9 @@ _ = require('lodash'); chai = require('chai')
 path = require('path'); yaml = require('js-yaml')
 assert = chai.assert; expect = chai.expect; should = chai.should()
 color = require('mocha').reporters.Base.color
-smap = require("../build/snailmailaddressparser")
+smap = require("../build/snailmailaddressparser").simplemailaddressparser
+
+strategies = []
 
 # Ensure the type of import is what we expect
 describe "SnailMailAddressParser", ->
@@ -19,6 +21,13 @@ describe "SnailMailAddressParser", ->
     assert require('semver').valid(smap.Version)
 
 describe "LineMatcherStrategy", ->
+  it "should have line matcher and strategy", ->
+    LM = smap.LineMatcher
+    LMS = smap.LineMatcherStrategy
+
+    assert.isFunction(LM)
+    assert.isFunction(LMS)
+
   it "should combine all permutations", ->
     LM = smap.LineMatcher
     LMS = smap.LineMatcherStrategy
@@ -45,11 +54,16 @@ describe "LineMatcherStrategy", ->
 strategies = smap.AddressStrategy.all_strategies()
 
 describe "Address strategies", ->
+  it "should have a Canada strategy", ->
+    assert.ok(strategies.canada, "strategies.canada does not exist")
+    line_strats = strategies.canada.line_strategies().length
+    assert.ok(line_strats > 4,
+      "Canada should have at least 4 line strategies, got #{line_strats}")
+
   ###
   # Test the strategy for constituents of the correct type
   ###
   _.each(strategies, (strategy_instance) ->
-
     describe "for #{strategy_instance.name}", ->
       ls_foo = strategy_instance.line_strategies
 
@@ -70,6 +84,7 @@ describe "Address strategies", ->
               # while we are here, add the class to line_matchers
               return lm.isLineMatcherClass
             )
+        return
       )
 
       # a list of unique line matchers for this strategy
@@ -81,7 +96,8 @@ describe "Address strategies", ->
           add_line_matcher(lm.options._or)
 
       _.each(strats, (strat) ->
-        _.each strat, (lm) -> add_line_matcher(lm)
+        _.each strat, (lm) -> add_line_matcher(lm); return
+        return
       )
 
       #
@@ -120,7 +136,9 @@ describe "Address strategies", ->
                   console.log "expr: |#{lm.rex}| matches: #{inspect match}"
                   assert false
           )
+          return
       )
+    return
   ) # /each strategy
 
 
