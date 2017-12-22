@@ -110,7 +110,7 @@ modules `build/snailmailaddressparser.js` and
 
 #### `cake test`
 
-Run [Mocha](http://visionmedia.github.com/mocha/)-based tests on the project.
+Run [Mocha](http://mochajs.org/)-based tests on the project.
 
 Fun tip: You can combine targets e.g. run `cake toast test` to build then test.
 
